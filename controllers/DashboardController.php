@@ -35,17 +35,8 @@ class DashboardController {
         $recentAppointments = $this->appointmentModel->getAll(1, []);
         $recentAppointments = array_slice($recentAppointments, 0, 5);
         
-        $db = Database::getInstance();
-        $result = $db->query("
-            SELECT status, COUNT(*) as total 
-            FROM appointments 
-            WHERE WEEK(appt_date) = WEEK(NOW()) 
-            GROUP BY status
-        ");
-        $weeklyStats = [];
-        while ($row = $result->fetch_assoc()) {
-            $weeklyStats[$row['status']] = $row['total'];
-        }
+        // ── نقل من Database Query إلى AppointmentModel ──────────────────────
+        $weeklyStats = $this->appointmentModel->getWeeklyStats();
         
         require 'views/dashboard/admin.php';
     }
@@ -60,15 +51,8 @@ class DashboardController {
         
         $doctorId = $doctor['id'];
         
-        $db = Database::getInstance();
-        $result = $db->query("
-            SELECT a.*, p.name as patient_name 
-            FROM appointments a 
-            JOIN users p ON a.patient_id = p.id 
-            WHERE a.doctor_id = ? AND a.appt_date = CURDATE() 
-            ORDER BY a.appt_time ASC
-        ", 'i', [$doctorId]);
-        $todayAppointments = $result->fetch_all(MYSQLI_ASSOC);
+        // ── نقل من Database Query إلى AppointmentModel ──────────────────────
+        $todayAppointments = $this->appointmentModel->getTodayAppointmentsByDoctor($doctorId);
         
         $todayCount = $this->appointmentModel->getTodayCount($doctorId);
         $stats = $this->appointmentModel->getDashboardStats($doctorId);
@@ -93,42 +77,11 @@ class DashboardController {
     private function patientDashboard() {
         $userId = Auth::userId();
         
-        $db = Database::getInstance();
-        
-        $result = $db->query("
-            SELECT COUNT(*) as total 
-            FROM appointments 
-            WHERE patient_id = ? AND status IN ('pending', 'confirmed')
-        ", 'i', [$userId]);
-        $activeCount = $result->fetch_assoc()['total'];
-        
-        $result = $db->query("
-            SELECT COUNT(*) as total 
-            FROM appointments 
-            WHERE patient_id = ? AND status = 'completed'
-        ", 'i', [$userId]);
-        $completedCount = $result->fetch_assoc()['total'];
-        
-        $result = $db->query("
-            SELECT a.*, u.name as doctor_name, s.name as specialization 
-            FROM appointments a 
-            JOIN doctors d ON a.doctor_id = d.id 
-            JOIN users u ON d.user_id = u.id 
-            LEFT JOIN specializations s ON d.specialization_id = s.id 
-            WHERE a.patient_id = ? AND a.appt_date >= CURDATE() 
-            ORDER BY a.appt_date ASC LIMIT 1
-        ", 'i', [$userId]);
-        $nextAppointment = $result->fetch_assoc();
-        
-        $result = $db->query("
-            SELECT a.*, u.name as doctor_name 
-            FROM appointments a 
-            JOIN doctors d ON a.doctor_id = d.id 
-            JOIN users u ON d.user_id = u.id 
-            WHERE a.patient_id = ? 
-            ORDER BY a.appt_date DESC LIMIT 5
-        ", 'i', [$userId]);
-        $recentAppointments = $result->fetch_all(MYSQLI_ASSOC);
+        // ── نقل من Database Queries إلى AppointmentModel ──────────────────
+        $activeCount = $this->appointmentModel->getActiveCountForPatient($userId);
+        $completedCount = $this->appointmentModel->getCompletedCountForPatient($userId);
+        $nextAppointment = $this->appointmentModel->getNextAppointmentForPatient($userId);
+        $recentAppointments = $this->appointmentModel->getRecentAppointmentsForPatient($userId, 5);
         
         require 'views/dashboard/patient.php';
     }

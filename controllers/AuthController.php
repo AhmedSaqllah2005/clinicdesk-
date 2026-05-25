@@ -31,6 +31,12 @@ class AuthController {
             redirect('index.php?page=login');
         }
         
+        // ── التحقق من صيغة الإيميل ─────────────────────────────────────────
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $_SESSION['error'] = "Invalid email format";
+            redirect('index.php?page=login');
+        }
+        
         $user = $this->userModel->findByEmail($email);
         
         if (!$user || !password_verify($password, $user['password'])) {

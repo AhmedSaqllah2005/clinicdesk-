@@ -150,9 +150,7 @@ class PatientsController
         require 'views/patients/profile.php';
     }
 
-    // ======================
-    // UPDATE PROFILE
-    // ======================
+    
     public function updateProfile()
     {
         Auth::requireRole('patient');
@@ -177,24 +175,24 @@ class PatientsController
         redirect('index.php?page=patient_profile');
     }
     public function appointments()
-{
-    Auth::requireRole('patient');
+    {
+        Auth::requireRole('patient');
 
-    $userId = Auth::userId();
+        $userId = Auth::userId();
 
-    $appointments = $this->appointmentModel->getByPatient($userId);
+        $appointments = $this->appointmentModel->getByPatient($userId);
 
-    require 'views/patients/my_appointments.php';
-}
+        require 'views/patients/my_appointments.php';
+    }
 
-public function prescriptions()
-{
-    Auth::requireRole('patient');
+    public function prescriptions()
+    {
+        Auth::requireRole('patient');
 
-    $userId = Auth::userId();
+        $userId = Auth::userId();
 
-    $prescriptions = $this->prescriptionModel->getByPatient($userId);
+        $prescriptions = $this->prescriptionModel->getByPatient($userId);
 
-    require 'views/patients/my_prescriptions.php';
-}
+        require 'views/patients/my_prescriptions.php';
+    }
 }

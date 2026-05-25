@@ -362,6 +362,20 @@ switch ($page) {
 
         break;
 
+    case 'store_specialization':
+
+        $controller = new SpecializationController();
+        $controller->store();
+
+        break;
+
+    case 'delete_specialization':
+
+        $controller = new SpecializationController();
+        $controller->delete();
+
+        break;
+
     // ================= REPORTS =================
     case 'reports':
 
@@ -393,4 +407,6 @@ switch ($page) {
         require 'views/errors/404.php';
 
         break;
+
+
 }

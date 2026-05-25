@@ -87,7 +87,6 @@ class UserModel extends BaseModel {
         return $row['total'];
     }
     
-    // ============= الدوال الناقصة =============
     
     public function getPatients() {
         $sql = "SELECT id, name, email, phone FROM users WHERE role = 'patient' ORDER BY name";
@@ -133,5 +132,15 @@ class UserModel extends BaseModel {
         $result = $this->execute($sql, 's', [$role]);
         $row = $result->fetch_assoc();
         return $row['total'];
+    }
+    
+    // =========================================================================
+    // updatePassword — تحديث كلمة المرور مع hash آمن
+    // =========================================================================
+    
+    public function updatePassword($id, $newPassword) {
+        $hashed = password_hash($newPassword, PASSWORD_DEFAULT);
+        $sql = "UPDATE users SET password = ? WHERE id = ?";
+        return $this->execute($sql, 'si', [$hashed, $id]);
     }
 }

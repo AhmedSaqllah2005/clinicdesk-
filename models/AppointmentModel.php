@@ -275,4 +275,87 @@ class AppointmentModel extends BaseModel
 
         return $result->fetch_all(MYSQLI_ASSOC);
     }
+
+    // =========================================================================
+    // Dashboard Helper Methods — دوال مساعدة لـ DashboardController
+    // =========================================================================
+
+    // ── getWeeklyStats — إحصائيات الموعد للأسبوع الحالي ──────────────────
+    public function getWeeklyStats()
+    {
+        $sql = "SELECT status, COUNT(*) as total 
+                FROM appointments 
+                WHERE WEEK(appt_date) = WEEK(NOW()) 
+                GROUP BY status";
+        $result = $this->execute($sql);
+        
+        $stats = [];
+        while ($row = $result->fetch_assoc()) {
+            $stats[$row['status']] = $row['total'];
+        }
+        return $stats;
+    }
+
+    // ── getTodayAppointmentsByDoctor — مواعيد الطبيب اليوم ───────────────
+    public function getTodayAppointmentsByDoctor($doctorId)
+    {
+        $sql = "SELECT a.*, p.name as patient_name 
+                FROM appointments a 
+                JOIN users p ON a.patient_id = p.id 
+                WHERE a.doctor_id = ? AND DATE(a.appt_date) = CURDATE() 
+                ORDER BY a.appt_time ASC";
+        $result = $this->execute($sql, 'i', [$doctorId]);
+        return $result->fetch_all(MYSQLI_ASSOC);
+    }
+
+    // ── getActiveCountForPatient — عدد المواعيد النشطة للمريض ──────────
+    public function getActiveCountForPatient($patientId)
+    {
+        $sql = "SELECT COUNT(*) as total 
+                FROM appointments 
+                WHERE patient_id = ? AND status IN ('pending', 'confirmed')";
+        $result = $this->execute($sql, 'i', [$patientId]);
+        $row = $result->fetch_assoc();
+        return (int) ($row['total'] ?? 0);
+    }
+
+    // ── getCompletedCountForPatient — عدد المواعيد المكتملة للمريض ──────
+    public function getCompletedCountForPatient($patientId)
+    {
+        $sql = "SELECT COUNT(*) as total 
+                FROM appointments 
+                WHERE patient_id = ? AND status = 'completed'";
+        $result = $this->execute($sql, 'i', [$patientId]);
+        $row = $result->fetch_assoc();
+        return (int) ($row['total'] ?? 0);
+    }
+
+    // ── getNextAppointmentForPatient — الموعد القادم للمريض ─────────────
+    public function getNextAppointmentForPatient($patientId)
+    {
+        $sql = "SELECT a.*, u.name as doctor_name, s.name as specialization 
+                FROM appointments a 
+                JOIN doctors d ON a.doctor_id = d.id 
+                JOIN users u ON d.user_id = u.id 
+                LEFT JOIN specializations s ON d.specialization_id = s.id 
+                WHERE a.patient_id = ? AND DATE(a.appt_date) >= CURDATE() 
+                ORDER BY a.appt_date ASC 
+                LIMIT 1";
+        $result = $this->execute($sql, 'i', [$patientId]);
+        return $result->fetch_assoc();
+    }
+
+    // ── getRecentAppointmentsForPatient — آخر 5 مواعيد للمريض ───────────
+    public function getRecentAppointmentsForPatient($patientId, $limit = 5)
+    {
+        $sql = "SELECT a.*, u.name as doctor_name 
+                FROM appointments a 
+                JOIN doctors d ON a.doctor_id = d.id 
+                JOIN users u ON d.user_id = u.id 
+                WHERE a.patient_id = ? 
+                ORDER BY a.appt_date DESC 
+                LIMIT ?";
+        $result = $this->execute($sql, 'ii', [$patientId, $limit]);
+        return $result->fetch_all(MYSQLI_ASSOC);
+    }
 }

@@ -188,8 +188,8 @@ class DoctorController
 
         require 'views/dashboard/doctor.php';
     }
-public function profile()
-{
+    public function profile()
+    {
     Auth::requireRole('doctor');
 
     $userId = Auth::userId();
@@ -199,10 +199,10 @@ public function profile()
     $doctor = $this->doctorModel->findByUserId($userId);
 
     require 'views/doctors/profile.php';
-}
+    }
 
-public function updateProfile()
-{
+    public function updateProfile()
+    {
     Auth::requireRole('doctor');
 
     if (!CSRF::validateToken($_POST['csrf_token'] ?? '')) {
@@ -233,13 +233,6 @@ public function updateProfile()
     ];
 
     redirect('index.php?page=doctor_profile');
-}
-
-
-
-
-
-
-
+    }
 
 }
