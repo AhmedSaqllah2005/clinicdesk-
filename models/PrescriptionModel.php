@@ -4,46 +4,33 @@ require_once 'BaseModel.php';
 
 class PrescriptionModel extends BaseModel
 {
-    public function getAll()
+  public function getAll()
     {
-        $sql = "
-            SELECT
+        $sql = "SELECT 
+                    p.*,
+                    a.appt_date,
+                    u.name AS patient_name,
+                    duser.name AS doctor_name
+                FROM prescriptions p
 
-                p.*,
+                JOIN appointments a 
+                    ON p.appointment_id = a.id
 
-                a.appt_date,
+                JOIN users u 
+                    ON a.patient_id = u.id
 
-                patient.name AS patient_name,
+                JOIN doctors d 
+                    ON a.doctor_id = d.id
 
-                doctor_user.name AS doctor_name
+                JOIN users duser 
+                    ON d.user_id = duser.id
 
-            FROM prescriptions p
-
-            JOIN appointments a
-                ON p.appointment_id = a.id
-
-            JOIN users AS patient
-                ON a.patient_id = patient.id
-
-            JOIN doctors d
-                ON a.doctor_id = d.id
-
-            JOIN users AS doctor_user
-                ON d.user_id = doctor_user.id
-
-            ORDER BY p.id DESC
-        ";
+                ORDER BY p.created_at DESC";
 
         $result = $this->execute($sql);
 
-        if ($result && $result->num_rows > 0) {
-
-            return $result->fetch_all(MYSQLI_ASSOC);
-        }
-
-        return [];
+        return $result->fetch_all(MYSQLI_ASSOC);
     }
-
 
     public function getByPatient($patientId)
     {

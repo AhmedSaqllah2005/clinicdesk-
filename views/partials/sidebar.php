@@ -30,22 +30,16 @@
                 <?php if ($userRole == 'patient'): ?>
 
                     <li class="nav-item">
-                        <a href="index.php?page=my_appointments"
-                            class="nav-link <?= $currentPage == 'my_appointments' ? 'active' : '' ?>">
-
+                        <a href="index.php?page=appointments" class="nav-link">
                             <i class="nav-icon fas fa-calendar-check"></i>
-
-                            <p>My Appointments</p>
+                            <p>Appointments</p>
                         </a>
                     </li>
 
                     <li class="nav-item">
-                        <a href="index.php?page=my_prescriptions"
-                            class="nav-link <?= $currentPage == 'my_prescriptions' ? 'active' : '' ?>">
-
-                            <i class="nav-icon fas fa-file-medical"></i>
-
-                            <p>My Prescriptions</p>
+                        <a href="index.php?page=prescriptions" class="nav-link">
+                            <i class="nav-icon fas fa-notes-medical"></i>
+                            <p>Prescriptions</p>
                         </a>
                     </li>
 

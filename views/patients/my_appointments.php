@@ -68,10 +68,12 @@ require_once 'views/partials/sidebar.php';
 
                                     </td>
 
-                                    <td><?= sanitize($app['reason']) ?></td>
-
+                                    <td
+                                        style="max-width:220px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                                        <?= sanitize($appt['reason']) ?>
+                                    </td>
                                 </tr>
-
+                                
                             <?php endforeach; ?>
 
                         </tbody>
