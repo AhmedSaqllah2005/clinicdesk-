@@ -50,7 +50,7 @@ require_once 'views/partials/sidebar.php';
                     </h3>
 
                     <div class="card-tools">
-                        <a href="index.php?page=book_appointment" class="btn btn-primary btn-sm">
+                        <a href="index.php?page=book" class="btn btn-primary btn-sm">
 
                             <i class="fas fa-plus"></i>
                             Book Appointment

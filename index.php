@@ -81,7 +81,12 @@ switch ($page) {
     case 'appointments':
 
         $controller = new AppointmentController();
-        $controller->index();
+
+        if ($action === 'book') {
+            $controller->book();
+        } else {
+            $controller->index();
+        }
 
         break;
 

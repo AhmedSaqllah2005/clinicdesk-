@@ -37,7 +37,7 @@ require_once 'views/partials/sidebar.php';
                         <div class="icon">
                             <i class="fas fa-users"></i>
                         </div>
-                        <a href="index.php?page=users&role=patient" class="small-box-footer">More info <i
+                        <a href="index.php?page=patients" class="small-box-footer">More info <i
                                 class="fas fa-arrow-circle-right"></i></a>
                     </div>
                 </div>
@@ -178,21 +178,21 @@ require_once 'views/partials/sidebar.php';
                         <div class="card-body">
                             <div class="row">
                                 <div class="col-6 mb-3">
-                                    <a href="index.php?page=appointments"
+                                    <a href="index.php?page=appointments&action=book"
                                         class="btn btn-block text-white d-flex align-items-center justify-content-center"
                                         style="background-color: #007bff; border-radius: 6px; height: 60px; font-weight: 500;">
                                         <i class="fas fa-calendar-plus mr-2"></i> New Appointment
                                     </a>
                                 </div>
                                 <div class="col-6 mb-3">
-                                    <a href="index.php?page=doctors"
+                                    <a href="index.php?page=doctors#addDoctorModal"
                                         class="btn btn-block text-white d-flex align-items-center justify-content-center"
                                         style="background-color: #28a745; border-radius: 6px; height: 60px; font-weight: 500;">
                                         <i class="fas fa-user-md mr-2"></i> Add Doctor
                                     </a>
                                 </div>
                                 <div class="col-6">
-                                    <a href="index.php?page=users&role=patient"
+                                    <a href="index.php?page=patients"
                                         class="btn btn-block text-white d-flex align-items-center justify-content-center"
                                         style="background-color: #17a2b8; border-radius: 6px; height: 60px; font-weight: 500;">
                                         <i class="fas fa-user-plus mr-2"></i> Add Patient

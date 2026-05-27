@@ -46,7 +46,7 @@ class AppointmentController
 
     public function book()
     {
-        Auth::requireRole('patient');
+        Auth::requireRole('patient', 'admin');
 
         $doctors = $this->doctorModel->getAll();
 
@@ -59,7 +59,7 @@ class AppointmentController
 
     public function store()
     {
-        Auth::requireRole('patient');
+        Auth::requireRole('patient', 'admin');
 
         // ── CSRF ──────────────────────────────────────────────────────────────
         if (!CSRF::validateToken($_POST['csrf_token'] ?? '')) {
@@ -67,7 +67,10 @@ class AppointmentController
             redirect('index.php?page=appointments');
         }
 
-        $patientId = Auth::userId();
+        $user = Auth::currentUser();
+        $patientId = ($user['role'] === 'admin')
+            ? (int) ($_POST['patient_id'] ?? 0)
+            : Auth::userId();
         $doctorId = (int) ($_POST['doctor_id'] ?? 0);
         $date = trim($_POST['appt_date'] ?? '');
         $time = trim($_POST['appt_time'] ?? '');
@@ -76,6 +79,11 @@ class AppointmentController
         // ── 1. حقول إلزامية ───────────────────────────────────────────────────
         if (!$doctorId || !$date || !$time || !$reason) {
             $_SESSION['flash'] = ['type' => 'danger', 'message' => 'All fields are required.'];
+            redirect('index.php?page=appointments&action=book');
+        }
+
+        if ($user['role'] === 'admin' && !$patientId) {
+            $_SESSION['flash'] = ['type' => 'danger', 'message' => 'Please select a patient.'];
             redirect('index.php?page=appointments&action=book');
         }
 
@@ -118,7 +126,8 @@ class AppointmentController
         ]);
 
         $_SESSION['flash'] = ['type' => 'success', 'message' => 'Appointment booked successfully!'];
-        redirect('index.php?page=my_appointments');
+        $redirect = ($user['role'] === 'admin') ? 'index.php?page=appointments' : 'index.php?page=my_appointments';
+        redirect($redirect);
     }
 
     // =========================================================================
