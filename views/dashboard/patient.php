@@ -79,7 +79,7 @@ require_once 'views/partials/sidebar.php';
             <!-- BOOK BUTTON -->
             <div class="row mb-3">
                 <div class="col-12">
-                    <a href="index.php?page=book_appointment" class="btn btn-info btn-block">
+                    <a href="index.php?page=appointments&action=book" class="btn btn-info btn-block">
                         <i class="fas fa-plus-circle"></i>
                         Book New Appointment
                     </a>
@@ -146,7 +146,7 @@ require_once 'views/partials/sidebar.php';
 
                     <div class="card-tools">
 
-                        <a href="index.php?page=my_appointments" class="btn btn-sm btn-primary">
+                        <a href="index.php?page=appointments" class="btn btn-sm btn-primary">
 
                             View All
 

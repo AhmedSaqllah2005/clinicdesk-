@@ -119,7 +119,7 @@ require_once 'views/partials/sidebar.php';
                         <button type="submit" class="btn btn-primary">
                             <i class="fas fa-check-circle"></i> Book Appointment
                         </button>
-                        <a href="index.php?page=my_appointments" class="btn btn-secondary">Cancel</a>
+                        <a href="index.php?page=dashboard" class="btn btn-secondary">Cancel</a>
                     </div>
                 </form>
             </div>

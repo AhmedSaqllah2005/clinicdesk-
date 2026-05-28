@@ -131,10 +131,26 @@ class AppointmentModel extends BaseModel
     public function getByDoctor($doctorId, $page, $filters = [])
     {
         $offset = ($page - 1) * ITEMS_PER_PAGE;
-        $sql = "SELECT a.*, p.name as patient_name 
-                FROM appointments a 
-                JOIN users p ON a.patient_id = p.id 
-                WHERE a.doctor_id = ?";
+
+        $sql = "
+        SELECT 
+            a.*,
+            p.name AS patient_name,
+            u.name AS doctor_name
+        FROM appointments a
+
+        JOIN users p
+            ON a.patient_id = p.id
+
+        JOIN doctors d
+            ON a.doctor_id = d.id
+
+        JOIN users u
+            ON d.user_id = u.id
+
+        WHERE a.doctor_id = ?
+    ";
+
         $params = [$doctorId];
         $types = 'i';
 
@@ -144,62 +160,57 @@ class AppointmentModel extends BaseModel
             $types .= 's';
         }
 
-        $sql .= " ORDER BY a.appt_date DESC LIMIT ? OFFSET ?";
+        $sql .= " 
+        ORDER BY a.appt_date DESC, a.appt_time DESC
+        LIMIT ? OFFSET ?
+    ";
+
         $params[] = ITEMS_PER_PAGE;
         $params[] = $offset;
         $types .= 'ii';
 
         $result = $this->execute($sql, $types, $params);
+
         return $result->fetch_all(MYSQLI_ASSOC);
     }
 
-    public function getAll($page, $filters = [])
+    public function getAll($page = 1, $filters = [])
     {
         $offset = ($page - 1) * ITEMS_PER_PAGE;
-        $sql = "SELECT a.*, p.name as patient_name, u.name as doctor_name, s.name as specialization 
-                FROM appointments a 
-                JOIN users p ON a.patient_id = p.id 
-                JOIN doctors d ON a.doctor_id = d.id 
-                JOIN users u ON d.user_id = u.id 
-                LEFT JOIN specializations s ON d.specialization_id = s.id 
-                WHERE 1=1";
-        $params = [];
-        $types = '';
 
-        if (!empty($filters['doctor_id'])) {
-            $sql .= " AND a.doctor_id = ?";
-            $params[] = $filters['doctor_id'];
-            $types .= 'i';
-        }
+        $sql = "
+        SELECT 
+            a.*,
 
-        if (!empty($filters['status'])) {
-            $sql .= " AND a.status = ?";
-            $params[] = $filters['status'];
-            $types .= 's';
-        }
+            p.name AS patient_name,
 
-        if (!empty($filters['patient_name'])) {
-            $sql .= " AND p.name LIKE ?";
-            $params[] = "%{$filters['patient_name']}%";
-            $types .= 's';
-        }
+            duser.name AS doctor_name,
 
-        if (!empty($filters['start_date']) && !empty($filters['end_date'])) {
-            $sql .= " AND a.appt_date BETWEEN ? AND ?";
-            $params[] = $filters['start_date'];
-            $params[] = $filters['end_date'];
-            $types .= 'ss';
-        }
+            s.name AS specialization_name
 
-        $sql .= " ORDER BY a.appt_date DESC LIMIT ? OFFSET ?";
-        $params[] = ITEMS_PER_PAGE;
-        $params[] = $offset;
-        $types .= 'ii';
+        FROM appointments a
 
-        $result = $this->execute($sql, $types, $params);
+        JOIN users p
+            ON a.patient_id = p.id
+
+        JOIN doctors d
+            ON a.doctor_id = d.id
+
+        JOIN users duser
+            ON d.user_id = duser.id
+
+        LEFT JOIN specializations s
+            ON d.specialization_id = s.id
+
+        ORDER BY a.appt_date DESC, a.appt_time DESC
+
+        LIMIT ? OFFSET ?
+    ";
+
+        $result = $this->execute($sql, 'ii', [ITEMS_PER_PAGE, $offset]);
+
         return $result->fetch_all(MYSQLI_ASSOC);
     }
-
     public function countFiltered($scope, $scopedId, $filters = [])
     {
         $sql = "SELECT COUNT(*) as total FROM appointments a ";
@@ -288,7 +299,7 @@ class AppointmentModel extends BaseModel
                 WHERE WEEK(appt_date) = WEEK(NOW()) 
                 GROUP BY status";
         $result = $this->execute($sql);
-        
+
         $stats = [];
         while ($row = $result->fetch_assoc()) {
             $stats[$row['status']] = $row['total'];

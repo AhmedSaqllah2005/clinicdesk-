@@ -4,6 +4,7 @@ session_start();
 
 require_once 'config/config.php';
 require_once 'config/database.php';
+
 require_once 'core/helpers.php';
 require_once 'core/CSRF.php';
 require_once 'core/Database.php';
@@ -30,13 +31,14 @@ require_once 'controllers/SpecializationController.php';
 require_once 'controllers/PrescriptionController.php';
 require_once 'controllers/ReportController.php';
 
+// ================= ROUTER VARIABLES =================
 $page = $_GET['page'] ?? 'login';
 $action = $_GET['action'] ?? 'index';
 
 // ================= PUBLIC PAGES =================
-$public_pages = ['login'];
+$publicPages = ['login'];
 
-if (!isset($_SESSION['user']) && !in_array($page, $public_pages)) {
+if (!isset($_SESSION['user']) && !in_array($page, $publicPages)) {
     header('Location: index.php?page=login');
     exit;
 }
@@ -44,7 +46,9 @@ if (!isset($_SESSION['user']) && !in_array($page, $public_pages)) {
 // ================= ROUTER =================
 switch ($page) {
 
-    // ================= AUTH =================
+    // =========================================================
+    // AUTH
+    // =========================================================
     case 'login':
 
         $controller = new AuthController();
@@ -69,7 +73,9 @@ switch ($page) {
 
         break;
 
-    // ================= DASHBOARD =================
+    // =========================================================
+    // DASHBOARD
+    // =========================================================
     case 'dashboard':
 
         $controller = new DashboardController();
@@ -77,20 +83,49 @@ switch ($page) {
 
         break;
 
-    // ================= APPOINTMENTS =================
+    // =========================================================
+    // APPOINTMENTS
+    // =========================================================
     case 'appointments':
 
         $controller = new AppointmentController();
 
         if ($action === 'book') {
+
+            // patient booking page
             $controller->book();
+
         } else {
+
+            // admin appointments list
             $controller->index();
         }
 
         break;
 
+    // ===== FIX FOR 403 =====
+    case 'book_appointment':
+
+        Auth::requireRole('patient');
+
+        $controller = new AppointmentController();
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+            // save appointment
+            $controller->store();
+
+        } else {
+
+            // show booking form
+            $controller->book();
+        }
+
+        break;
+
     case 'store_appointment':
+
+        Auth::requireRole('patient');
 
         $controller = new AppointmentController();
         $controller->store();
@@ -123,7 +158,21 @@ switch ($page) {
 
         break;
 
-    // ================= DOCTORS =================
+    // =========================================================
+    // MY APPOINTMENTS (PATIENT)
+    // =========================================================
+    case 'my_appointments':
+
+        Auth::requireRole('patient');
+
+        $controller = new AppointmentController();
+        $controller->myAppointments();
+
+        break;
+
+    // =========================================================
+    // DOCTORS
+    // =========================================================
     case 'doctors':
 
         $controller = new DoctorController();
@@ -189,7 +238,9 @@ switch ($page) {
 
         break;
 
-    // ================= USERS =================
+    // =========================================================
+    // USERS
+    // =========================================================
     case 'users':
 
         $controller = new UserController();
@@ -249,7 +300,9 @@ switch ($page) {
 
         break;
 
-    // ================= PATIENTS =================
+    // =========================================================
+    // PATIENTS
+    // =========================================================
     case 'patients':
 
         Auth::requireRole('admin');
@@ -300,7 +353,9 @@ switch ($page) {
 
         break;
 
-    // ================= PATIENT PROFILE =================
+    // =========================================================
+    // PATIENT PROFILE
+    // =========================================================
     case 'patient_profile':
 
         Auth::requireRole('patient');
@@ -319,15 +374,6 @@ switch ($page) {
 
         break;
 
-    case 'my_appointments':
-
-        Auth::requireRole('patient');
-
-        $controller = new PatientsController();
-        $controller->appointments();
-
-        break;
-
     case 'my_prescriptions':
 
         Auth::requireRole('patient');
@@ -337,7 +383,9 @@ switch ($page) {
 
         break;
 
-    // ================= PRESCRIPTIONS =================
+    // =========================================================
+    // PRESCRIPTIONS
+    // =========================================================
     case 'prescriptions':
 
         $controller = new PrescriptionController();
@@ -359,7 +407,9 @@ switch ($page) {
 
         break;
 
-    // ================= SPECIALIZATIONS =================
+    // =========================================================
+    // SPECIALIZATIONS
+    // =========================================================
     case 'specializations':
 
         $controller = new SpecializationController();
@@ -381,7 +431,9 @@ switch ($page) {
 
         break;
 
-    // ================= REPORTS =================
+    // =========================================================
+    // REPORTS
+    // =========================================================
     case 'reports':
 
         Auth::requireRole('admin');
@@ -400,7 +452,9 @@ switch ($page) {
 
         break;
 
-    // ================= ERRORS =================
+    // =========================================================
+    // ERRORS
+    // =========================================================
     case '403':
 
         require 'views/errors/403.php';
@@ -412,6 +466,4 @@ switch ($page) {
         require 'views/errors/404.php';
 
         break;
-
-
 }

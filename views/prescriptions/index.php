@@ -74,11 +74,11 @@ require_once 'views/partials/sidebar.php';
                                     <tr>
 
                                         <td>
-                                            <?= sanitize($p['patient_name']) ?>
+                                            <?= sanitize($p['patient_name']?? 'N/A') ?>
                                         </td>
 
                                         <td>
-                                            Dr. <?= sanitize($p['doctor_name']) ?>
+                                            <?= sanitize($p['doctor_name']?? 'N/A') ?>
                                         </td>
 
                                         <td>

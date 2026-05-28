@@ -22,12 +22,16 @@ class AppointmentController
         Auth::requireRole('admin');
 
         $page = max(1, (int) ($_GET['p'] ?? 1));
+
+        // لما يجي من "Today's Appointments" في الداشبورد
+        $todayFilter = ($_GET['filter'] ?? '') === 'today';
+
         $filters = [
-            'doctor_id' => (int) ($_GET['doctor_id'] ?? 0),
-            'status' => $_GET['status'] ?? '',
+            'doctor_id'    => (int) ($_GET['doctor_id'] ?? 0),
+            'status'       => $_GET['status'] ?? '',
             'patient_name' => trim($_GET['patient_name'] ?? ''),
-            'start_date' => $_GET['start_date'] ?? '',
-            'end_date' => $_GET['end_date'] ?? '',
+            'start_date'   => $todayFilter ? date('Y-m-d') : ($_GET['start_date'] ?? ''),
+            'end_date'     => $todayFilter ? date('Y-m-d') : ($_GET['end_date'] ?? ''),
         ];
 
         $appointments = $this->appointmentModel->getAll($page, $filters);
@@ -194,7 +198,7 @@ class AppointmentController
         $totalItems = $this->appointmentModel->countFiltered('patient', $userId, $filters);
         $paginator = new Paginator($totalItems, ITEMS_PER_PAGE, $page);
 
-        require 'views/appointments/my_appointments.php';
+       require 'views/appointments/index.php';
     }
 
     // =========================================================================

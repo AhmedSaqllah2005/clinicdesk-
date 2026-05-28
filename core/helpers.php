@@ -1,8 +1,8 @@
 <?php
-function sanitize($value) {
-    return htmlspecialchars(trim($value), ENT_QUOTES, 'UTF-8');
+function sanitize($data)
+{
+    return htmlspecialchars(trim((string)($data ?? '')), ENT_QUOTES, 'UTF-8');
 }
-
 function redirect($url) {
     header("Location: $url");
     exit;

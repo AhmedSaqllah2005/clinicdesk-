@@ -4,44 +4,55 @@ require_once 'BaseModel.php';
 
 class PrescriptionModel extends BaseModel
 {
-  public function getAll()
+    // =========================================================================
+    // Get All Prescriptions
+    // =========================================================================
+
+    public function getAll()
     {
-        $sql = "SELECT 
-                    p.*,
-                    a.appt_date,
-                    u.name AS patient_name,
-                    duser.name AS doctor_name
-                FROM prescriptions p
+        $sql = "
+            SELECT 
+                p.*,
+                a.appt_date,
 
-                JOIN appointments a 
-                    ON p.appointment_id = a.id
+                patient.name AS patient_name,
+                doctor.name AS doctor_name
 
-                JOIN users u 
-                    ON a.patient_id = u.id
+            FROM prescriptions p
 
-                JOIN doctors d 
-                    ON a.doctor_id = d.id
+            JOIN appointments a
+                ON p.appointment_id = a.id
 
-                JOIN users duser 
-                    ON d.user_id = duser.id
+            JOIN users patient
+                ON a.patient_id = patient.id
 
-                ORDER BY p.created_at DESC";
+            JOIN doctors d
+                ON a.doctor_id = d.id
+
+            JOIN users doctor
+                ON d.user_id = doctor.id
+
+            ORDER BY p.created_at DESC
+        ";
 
         $result = $this->execute($sql);
 
         return $result->fetch_all(MYSQLI_ASSOC);
     }
 
+    // =========================================================================
+    // Get Prescriptions By Patient
+    // =========================================================================
+
     public function getByPatient($patientId)
     {
         $sql = "
             SELECT
-
                 p.*,
-
                 a.appt_date,
 
-                u.name as doctor_name
+                doctor.name AS doctor_name,
+                patient.name AS patient_name
 
             FROM prescriptions p
 
@@ -51,8 +62,11 @@ class PrescriptionModel extends BaseModel
             JOIN doctors d
                 ON a.doctor_id = d.id
 
-            JOIN users u
-                ON d.user_id = u.id
+            JOIN users doctor
+                ON d.user_id = doctor.id
+
+            JOIN users patient
+                ON a.patient_id = patient.id
 
             WHERE a.patient_id = ?
 
@@ -62,12 +76,15 @@ class PrescriptionModel extends BaseModel
         $result = $this->execute($sql, 'i', [$patientId]);
 
         if ($result && $result->num_rows > 0) {
-
             return $result->fetch_all(MYSQLI_ASSOC);
         }
 
         return [];
     }
+
+    // =========================================================================
+    // Create Prescription
+    // =========================================================================
 
     public function create($data)
     {
@@ -87,16 +104,16 @@ class PrescriptionModel extends BaseModel
         return $this->execute($sql, 'issss', [
 
             $data['appointment_id'],
-
             $data['diagnosis'],
-
             $data['medications'],
-
             $data['notes'] ?? '',
-
             $data['file_path'] ?? null
         ]);
     }
+
+    // =========================================================================
+    // Get Prescription By Appointment
+    // =========================================================================
 
     public function getByAppointment($appointmentId)
     {
@@ -110,6 +127,10 @@ class PrescriptionModel extends BaseModel
 
         return $result->fetch_assoc();
     }
+
+    // =========================================================================
+    // Check If Prescription Exists
+    // =========================================================================
 
     public function existsForAppointment($appointmentId)
     {
