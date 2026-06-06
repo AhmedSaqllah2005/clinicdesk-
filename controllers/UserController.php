@@ -44,13 +44,13 @@ class UserController
             'phone'    => trim($_POST['phone'] ?? '')
         ];
 
-        // [M4] التحقق من صيغة الإيميل
+
         if (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
             $_SESSION['flash'] = ['type' => 'danger', 'message' => 'Invalid email format'];
             redirect('index.php?page=users');
         }
 
-        // [M12] التحقق من طول كلمة المرور
+
         if (strlen($data['password']) < 8) {
             $_SESSION['flash'] = ['type' => 'danger', 'message' => 'Password must be at least 8 characters'];
             redirect('index.php?page=users');
@@ -61,18 +61,30 @@ class UserController
             redirect('index.php?page=users');
         }
 
-        $userId = $this->userModel->create($data);
+        $db = Database::getInstance();
+        $db->beginTransaction();
 
-        if ($data['role'] == 'doctor') {
-            $availableDays = isset($_POST['available_days']) ? implode(',', $_POST['available_days']) : 'Sun,Mon,Tue,Wed,Thu';
-            $doctorData = [
-                'user_id'           => $userId,
-                'specialization_id' => (int) $_POST['specialization_id'],
-                'consultation_fee'  => (float) $_POST['consultation_fee'],
-                'available_days'    => $availableDays,
-                'bio'               => trim($_POST['bio'] ?? ''),
-            ];
-            $this->doctorModel->create($doctorData);
+        try {
+            $userId = $this->userModel->create($data);
+
+            if ($data['role'] == 'doctor') {
+                $availableDays = isset($_POST['available_days']) ? implode(',', $_POST['available_days']) : 'Sun,Mon,Tue,Wed,Thu';
+                $doctorData = [
+                    'user_id'           => $userId,
+                    'specialization_id' => (int) $_POST['specialization_id'],
+                    'consultation_fee'  => (float) $_POST['consultation_fee'],
+                    'available_days'    => $availableDays,
+                    'bio'               => trim($_POST['bio'] ?? ''),
+                    'years_experience'  => (int) ($_POST['years_experience'] ?? 0),
+                ];
+                $this->doctorModel->create($doctorData);
+            }
+
+            $db->commit();
+        } catch (Exception $e) {
+            $db->rollback();
+            $_SESSION['flash'] = ['type' => 'danger', 'message' => $e->getMessage()];
+            redirect('index.php?page=users');
         }
 
         $_SESSION['flash'] = ['type' => 'success', 'message' => 'User created successfully'];
@@ -117,7 +129,7 @@ class UserController
         $id = (int) $_POST['id'];
         $role = $_POST['role'];
 
-        // [M4] التحقق من صيغة الإيميل عند التحديث
+
         $email = trim($_POST['email']);
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $_SESSION['flash'] = ['type' => 'danger', 'message' => 'Invalid email format'];

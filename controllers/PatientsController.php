@@ -1,6 +1,5 @@
 <?php
 
-// [M11] حذف require_once المكررة — كل الملفات محمّلة بالفعل في index.php
 
 class PatientsController
 {
@@ -21,7 +20,8 @@ class PatientsController
     {
         Auth::requireRole('admin');
 
-        $patients = $this->userModel->getPatients();
+        $search   = trim($_GET['search'] ?? '');
+        $patients = $this->patientModel->searchPatients($search);
         require 'views/patients/index.php';
     }
 
@@ -39,13 +39,13 @@ class PatientsController
         $password = $_POST['password'];
         $phone    = trim($_POST['phone'] ?? '');
 
-        // [M4] التحقق من صيغة الإيميل
+
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $_SESSION['flash'] = ['type' => 'danger', 'message' => 'Invalid email format'];
             redirect('index.php?page=patients');
         }
 
-        // [M12] التحقق من طول كلمة المرور
+
         if (strlen($password) < 8) {
             $_SESSION['flash'] = ['type' => 'danger', 'message' => 'Password must be at least 8 characters'];
             redirect('index.php?page=patients');
@@ -112,7 +112,7 @@ class PatientsController
 
         $id = (int) $_POST['id'];
 
-        // [M4] التحقق من صيغة الإيميل عند التحديث
+
         $email = trim($_POST['email']);
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $_SESSION['flash'] = ['type' => 'danger', 'message' => 'Invalid email format'];
@@ -166,7 +166,7 @@ class PatientsController
         require 'views/patients/profile.php';
     }
 
-    
+
     public function updateProfile()
     {
         Auth::requireRole('patient');
@@ -178,7 +178,7 @@ class PatientsController
 
         $userId = Auth::userId();
 
-        // [M4] التحقق من صيغة الإيميل
+
         $email = trim($_POST['email']);
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $_SESSION['flash'] = ['type' => 'danger', 'message' => 'Invalid email format'];

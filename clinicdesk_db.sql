@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jun 04, 2026 at 09:29 PM
+-- Generation Time: Jun 03, 2026 at 08:14 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -44,25 +44,26 @@ CREATE TABLE `appointments` (
 --
 
 INSERT INTO `appointments` (`id`, `patient_id`, `doctor_id`, `appt_date`, `appt_time`, `status`, `reason`, `doctor_notes`, `created_at`) VALUES
-(1, 6, 1, '2026-05-21', '09:00:00', 'confirmed', 'Chest pain and shortness of breath', NULL, '2026-05-21 14:47:37'),
-(2, 7, 1, '2026-05-21', '11:00:00', 'confirmed', 'High blood pressure', NULL, '2026-05-21 14:47:37'),
-(3, 8, 1, '2026-05-21', '13:00:00', 'completed', 'Routine checkup', NULL, '2026-05-21 14:47:37'),
-(4, 9, 2, '2026-05-21', '10:00:00', 'completed', 'Child has high fever', NULL, '2026-05-21 14:47:37'),
-(5, 10, 2, '2026-05-21', '14:00:00', 'pending', 'Routine vaccination', NULL, '2026-05-21 14:47:37'),
-(7, 6, 4, '2026-05-22', '11:00:00', 'cancelled', 'Severe migraine', NULL, '2026-05-21 14:47:37'),
-(8, 7, 2, '2026-05-22', '13:30:00', 'confirmed', 'Child with persistent cough', NULL, '2026-05-21 14:47:37'),
-(9, 8, 1, '2026-05-23', '10:00:00', 'cancelled', 'Cardiology follow-up', NULL, '2026-05-21 14:47:37'),
-(10, 9, 3, '2026-05-23', '14:00:00', 'completed', 'Hand fracture', NULL, '2026-05-21 14:47:37'),
-(11, 10, 4, '2026-05-24', '12:00:00', 'pending', 'Numbness in limbs', NULL, '2026-05-21 14:47:37'),
-(13, 6, 1, '2026-05-16', '09:00:00', 'pending', 'Routine checkup', NULL, '2026-05-21 14:47:37'),
-(14, 7, 3, '2026-05-14', '11:00:00', 'completed', 'Back pain', NULL, '2026-05-21 14:47:37'),
-(15, 8, 2, '2026-05-11', '10:00:00', 'confirmed', 'Vaccinations', NULL, '2026-05-21 14:47:37'),
-(16, 9, 4, '2026-05-18', '14:00:00', 'completed', 'Severe headache', NULL, '2026-05-21 14:47:37'),
-(17, 10, 1, '2026-05-06', '12:00:00', 'completed', 'Blood pressure check', NULL, '2026-05-21 14:47:37'),
-(19, 6, 2, '2026-05-26', '10:00:00', 'completed', 'Patient requested cancellation', 'Reschedule next week', '2026-05-21 14:47:37'),
-(20, 8, 4, '2026-05-20', '15:00:00', 'cancelled', 'Emergency - patient could not come', 'Call to reschedule', '2026-05-21 14:47:37'),
-(21, 7, 3, '2026-05-28', '10:30:00', 'completed', 'sc', NULL, '2026-05-27 06:34:16'),
-(22, 9, 8, '2026-06-04', '14:30:00', 'pending', 'NULL', NULL, '2026-06-02 20:53:58');
+(1, 7, 1, '2026-05-01', '09:00:00', 'completed', 'Recurring headaches and general fatigue', 'Patient examined. Prescribed painkillers and rest.', '2026-04-28 05:00:00'),
+(2, 8, 2, '2026-05-03', '10:00:00', 'completed', 'Chest pain and shortness of breath', 'ECG normal. Advised to reduce stress and monitor blood pressure.', '2026-04-30 06:00:00'),
+(3, 9, 3, '2026-05-05', '09:30:00', 'completed', 'Child with fever and persistent cough', 'Bacterial throat infection. Antibiotic course prescribed.', '2026-05-02 07:00:00'),
+(4, 10, 4, '2026-05-07', '11:00:00', 'completed', 'Sleep disorder and ongoing anxiety', 'Diagnosed with generalized anxiety disorder. Therapy started.', '2026-05-04 08:00:00'),
+(5, 11, 5, '2026-05-10', '10:30:00', 'completed', 'Knee pain following sports injury', 'Partial cartilage tear. Cast applied for 3 weeks.', '2026-05-07 05:30:00'),
+(6, 12, 1, '2026-05-12', '09:00:00', 'completed', 'Cold and fever', 'Seasonal viral infection. Rest and antivirals prescribed.', '2026-05-09 06:00:00'),
+(7, 13, 2, '2026-05-14', '10:00:00', 'completed', 'High blood pressure', 'BP 150/95. Started Amlodipine.', '2026-05-11 07:00:00'),
+(8, 14, 3, '2026-05-16', '09:30:00', 'completed', 'Child growth delay concern', 'Growth within normal range. Follow-up in 6 months.', '2026-05-13 06:30:00'),
+(9, 15, 4, '2026-05-18', '11:00:00', 'completed', 'Depression and social withdrawal', 'Treatment plan set. Weekly therapy sessions scheduled.', '2026-05-15 08:00:00'),
+(10, 16, 5, '2026-05-20', '10:30:00', 'completed', 'Chronic lower back pain', 'Lumbar disc herniation L4-L5. Physical therapy for one month.', '2026-05-17 07:00:00'),
+(11, 7, 2, '2026-05-22', '10:00:00', 'confirmed', 'Routine cardiac check-up', NULL, '2026-05-19 05:00:00'),
+(12, 8, 3, '2026-05-23', '09:30:00', 'confirmed', 'Child vaccinations', NULL, '2026-05-20 06:00:00'),
+(13, 9, 1, '2026-05-25', '09:00:00', 'confirmed', 'Annual general health check', NULL, '2026-05-22 07:00:00'),
+(14, 10, 5, '2026-05-27', '10:30:00', 'confirmed', 'Shoulder injury follow-up', NULL, '2026-05-24 05:30:00'),
+(15, 11, 4, '2026-05-28', '11:00:00', 'confirmed', 'Mental health follow-up session', NULL, '2026-05-25 08:00:00'),
+(16, 12, 2, '2026-05-15', '10:00:00', 'cancelled', 'Sudden chest pain', NULL, '2026-05-12 04:00:00'),
+(17, 13, 1, '2026-05-17', '09:00:00', 'cancelled', 'Lab results review', NULL, '2026-05-14 05:00:00'),
+(18, 14, 2, '2026-06-08', '10:00:00', 'pending', 'Routine heart check-up', NULL, '2026-06-01 06:00:00'),
+(19, 15, 3, '2026-06-09', '09:30:00', 'pending', 'Pediatric consultation', NULL, '2026-06-01 07:00:00'),
+(20, 16, 1, '2026-06-10', '09:00:00', 'pending', 'Migraine headache', NULL, '2026-06-02 05:00:00');
 
 -- --------------------------------------------------------
 
@@ -74,26 +75,23 @@ CREATE TABLE `doctors` (
   `id` int(10) UNSIGNED NOT NULL,
   `user_id` int(10) UNSIGNED NOT NULL,
   `specialization_id` int(10) UNSIGNED NOT NULL,
-  `years_experience` int(11) DEFAULT 0,
-  `consultation_fee` decimal(10,2) NOT NULL DEFAULT 0.00,
-  `available_days` varchar(50) NOT NULL DEFAULT 'Sun,Mon,Tue,Wed,Thu',
   `bio` text DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `photo` varchar(255) DEFAULT NULL
+  `consultation_fee` decimal(8,2) NOT NULL DEFAULT 0.00,
+  `available_days` varchar(50) NOT NULL DEFAULT 'Sun,Mon,Tue,Wed,Thu',
+  `photo` varchar(255) DEFAULT NULL,
+  `years_experience` int(10) UNSIGNED NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `doctors`
 --
 
-INSERT INTO `doctors` (`id`, `user_id`, `specialization_id`, `years_experience`, `consultation_fee`, `available_days`, `bio`, `created_at`, `photo`) VALUES
-(1, 2, 4, 8, 800.00, 'Sun,Mon,Tue,Wed,Thu', 'This is an updated bio from automated test - 2026-05-28', '2026-05-21 14:47:28', NULL),
-(2, 3, 4, 5, 180.00, 'Sun,Tue,Thu', 'Pediatrics Specialist - 5 years experience', '2026-05-21 14:47:28', NULL),
-(3, 4, 5, 12, 300.00, 'Sun,Mon,Wed,Thu', 'Orthopedic Surgeon - 12 years experience', '2026-05-21 14:47:28', NULL),
-(4, 5, 6, 7, 280.00, 'Mon,Wed,Thu', 'Neurology Specialist - 7 years experience', '2026-05-21 14:47:28', NULL),
-(8, 21, 1, 5, 500.00, 'Sun,Mon,Tue,Wed,Thu', NULL, '2026-05-28 17:04:12', NULL),
-(13, 27, 4, 30, 12.00, 'Tue,Wed', 'The Best Doctor in Gaza Strip', '2026-05-31 11:13:43', NULL),
-(17, 32, 3, 4, 2.00, 'Mon', '', '2026-06-03 07:56:43', NULL);
+INSERT INTO `doctors` (`id`, `user_id`, `specialization_id`, `bio`, `consultation_fee`, `available_days`, `photo`, `years_experience`) VALUES
+(1, 2, 1, 'Experienced general practitioner covering a wide range of common illnesses.', 50.00, 'Sun,Mon,Tue,Wed,Thu', NULL, 8),
+(2, 3, 2, 'Specialist in cardiovascular diseases and heart health.', 80.00, 'Sun,Mon,Tue,Wed,Thu', NULL, 12),
+(3, 4, 4, 'Pediatrician specializing in child care from newborns up to age 18.', 60.00, 'Sun,Mon,Tue,Wed', NULL, 10),
+(4, 5, 6, 'Neurologist specializing in nervous system disorders and mental health.', 70.00, 'Mon,Tue,Wed,Thu', NULL, 9),
+(5, 6, 5, 'Orthopedic surgeon specializing in sports injuries and joint replacement.', 90.00, 'Sun,Tue,Thu', NULL, 15);
 
 -- --------------------------------------------------------
 
@@ -117,10 +115,16 @@ CREATE TABLE `prescriptions` (
 --
 
 INSERT INTO `prescriptions` (`id`, `appointment_id`, `patient_condition`, `diagnosis`, `medications`, `notes`, `file_path`, `created_at`) VALUES
-(5, 13, NULL, 'Hypertension', 'Lisinopril 10mg once daily\nAmlodipine 5mg once daily', 'Follow up in 2 weeks. Monitor blood pressure daily.', NULL, '2026-05-21 20:11:41'),
-(6, 14, NULL, 'Common Cold', 'Paracetamol 500mg every 6 hours\nRest and plenty of fluids', 'Symptoms should improve in 3-5 days', NULL, '2026-05-21 20:11:41'),
-(7, 15, NULL, 'Lower Back Pain', 'Ibuprofen 400mg three times daily after meals\nHeat therapy', 'Avoid heavy lifting. Physiotherapy recommended.', NULL, '2026-05-21 20:11:41'),
-(11, 4, 'No Food for 5 hourse after medicane', 'cccc', 'Actamoal', 'Rest for 3 days', NULL, '2026-06-03 06:54:17');
+(1, 1, 'Patient with recurring headaches and fatigue', 'Chronic tension headache', 'Ibuprofen 400mg – twice daily after meals for 5 days\nVitamin B12 1000mcg – once daily', 'Get adequate rest and stay hydrated. Reduce screen time.', NULL, '2026-05-01 07:00:00'),
+(2, 2, 'Patient with chest pain and shortness of breath', 'Anxiety with mild hypertension', 'Amlodipine 5mg – once daily in the morning\nAspirin 81mg – once daily with food', 'Monitor blood pressure daily. Reduce salt and fat intake.', NULL, '2026-05-03 08:00:00'),
+(3, 3, 'Child with high fever and severe cough', 'Acute bacterial throat infection', 'Amoxicillin 250mg – 3 times daily for 7 days\nParacetamol syrup 5ml – every 6 hours as needed', 'Complete the full antibiotic course even if symptoms improve.', NULL, '2026-05-05 07:30:00'),
+(4, 4, 'Patient with anxiety and sleep disturbance', 'Generalized anxiety disorder', 'Sertraline 50mg – once daily in the morning\nMelatonin 3mg – 1 hour before bedtime', 'Weekly psychotherapy sessions. Avoid caffeine after noon.', NULL, '2026-05-07 09:00:00'),
+(5, 5, 'Patient with sports-related knee injury', 'Partial medial meniscus tear', 'Diclofenac 50mg – twice daily after meals\nCalcium + Vitamin D3 – once daily', 'Wear cast for 3 weeks. Physical therapy 3 times per week.', NULL, '2026-05-10 08:30:00'),
+(6, 6, 'Patient with cold and fever', 'Seasonal viral infection', 'Paracetamol 500mg – every 8 hours as needed\nZinc 10mg – once daily', 'Full rest. Plenty of fluids. Avoid work for 3 days.', NULL, '2026-05-12 07:00:00'),
+(7, 7, 'Patient with high blood pressure', 'Stage 1 hypertension', 'Amlodipine 5mg – once daily in the morning\nLosartan 50mg – once daily in the evening', 'Record blood pressure daily. Follow a low-sodium diet.', NULL, '2026-05-14 08:00:00'),
+(8, 8, 'Child growth monitoring visit', 'Normal growth with mild iron deficiency', 'Iron syrup 5ml – once daily before meals\nVitamin D drops 400IU – once daily', 'Follow-up in 6 months. Encourage iron-rich foods.', NULL, '2026-05-16 07:30:00'),
+(9, 9, 'Patient with depression and social withdrawal', 'Mild to moderate depressive disorder', 'Fluoxetine 20mg – once daily in the morning\nOmega-3 1000mg – once daily with food', 'Weekly cognitive behavioral therapy sessions. Maintain social contact.', NULL, '2026-05-18 09:00:00'),
+(10, 10, 'Patient with chronic lower back pain', 'Lumbar disc herniation L4-L5', 'Naproxen 500mg – twice daily after meals\nCyclobenzaprine 5mg – once at night', 'Physical therapy 3 times per week for one month. Avoid prolonged sitting.', NULL, '2026-05-20 08:30:00');
 
 -- --------------------------------------------------------
 
@@ -141,9 +145,7 @@ INSERT INTO `specializations` (`id`, `name`) VALUES
 (2, 'Cardiology'),
 (3, 'Dermatology'),
 (8, 'ENT'),
-(11, 'Explore Test Specialization'),
 (1, 'General Practice'),
-(10, 'Gynecology'),
 (6, 'Neurology'),
 (7, 'Ophthalmology'),
 (5, 'Orthopedics'),
@@ -173,30 +175,22 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `name`, `email`, `password`, `role`, `phone`, `avatar`, `is_active`, `created_at`) VALUES
-(1, 'System Admin', 'admin@clinic.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin', '0500000000', NULL, 1, '2026-05-21 14:47:19'),
-(2, 'Dr. Ahmed Mahmoud', 'doctor1@clinic.com', '$2y$10$wF5fmPT/uxO1Xf0eYgaa9OWa8KQ8nrWQQjviAtLTDbAi.l.9eDa5S', 'doctor', '0599999799', NULL, 1, '2026-05-21 14:47:19'),
-(3, 'Dr. Sarah Khalid', 'doctor2@clinic.com', '$2y$10$wF5fmPT/uxO1Xf0eYgaa9OWa8KQ8nrWQQjviAtLTDbAi.l.9eDa5S', 'doctor', '0502222222', NULL, 1, '2026-05-21 14:47:19'),
-(4, 'Dr. Jana Saleh', 'doctor3@clinic.com', '$2y$10$wF5fmPT/uxO1Xf0eYgaa9OWa8KQ8nrWQQjviAtLTDbAi.l.9eDa5S', 'doctor', '0503333333', NULL, 1, '2026-05-21 14:47:19'),
-(5, 'Dr. Nora Alqahtani', 'doctor4@clinic.com', '$2y$10$wF5fmPT/uxO1Xf0eYgaa9OWa8KQ8nrWQQjviAtLTDbAi.l.9eDa5S', 'doctor', '0504444444', NULL, 1, '2026-05-21 14:47:19'),
-(6, 'Rami osama', 'patient1@clinic.com', '$2y$10$wF5fmPT/uxO1Xf0eYgaa9OWa8KQ8nrWQQjviAtLTDbAi.l.9eDa5S', 'patient', '0551111171', NULL, 1, '2026-05-21 14:47:19'),
-(7, 'Fatima Ali', 'patient2@clinic.com', '$2y$10$wF5fmPT/uxO1Xf0eYgaa9OWa8KQ8nrWQQjviAtLTDbAi.l.9eDa5S', 'patient', '0552222223', NULL, 1, '2026-05-21 14:47:19'),
-(8, 'Mohammed Saeed', 'patient3@clinic.com', '$2y$10$wF5fmPT/uxO1Xf0eYgaa9OWa8KQ8nrWQQjviAtLTDbAi.l.9eDa5S', 'patient', '0553333333', NULL, 1, '2026-05-21 14:47:19'),
-(9, 'Nora Ahmed', 'patient4@clinic.com', '$2y$10$wF5fmPT/uxO1Xf0eYgaa9OWa8KQ8nrWQQjviAtLTDbAi.l.9eDa5S', 'patient', '0554444444', NULL, 1, '2026-05-21 14:47:19'),
-(10, 'Khalid Ibrahim', 'patient5@clinic.com', '$2y$10$wF5fmPT/uxO1Xf0eYgaa9OWa8KQ8nrWQQjviAtLTDbAi.l.9eDa5S', 'patient', '0555555555', NULL, 1, '2026-05-21 14:47:19'),
-(12, 'Abd Al-Rhman Al Nawati', 'kingabedalrhmn110@gmail.com', '$2y$10$Pacs6F9Snfu65ukB2lnWxeZsZ35bLm4A0Qzqr20EJmvIfek24dBvK', 'doctor', '0595227272', NULL, 0, '2026-05-21 19:53:54'),
-(19, 'Test Patient', 'testpatient@example.com', '$2y$10$UvGQu0pZdbRoug0/Cfg4nOxSOfUyRNvXeO7lKMhb/2sdA9fUvY6zi', 'patient', '', NULL, 1, '2026-05-28 16:47:15'),
-(20, 'Explore Test User', 'explore-test@clinic.com', '$2y$10$yLhR2zsMlN2AwEoJLVj8IOPXbn4Mp1e0nnb56n5sLwKGAw5Fc9MJq', 'patient', '1234567890', NULL, 1, '2026-05-28 17:03:41'),
-(21, 'Dr. Test Jasmine', 'test_jasmine@clinic.com', '$2y$10$4Er9V7hOttB8WyKna0hVSeWsCwPWRKi6eeY53xbame9/vAH0E5t06', 'doctor', '', NULL, 1, '2026-05-28 17:04:12'),
-(22, 'Explore Test Doctor', 'test-doctor@clinic.com', '$2y$10$0iJem4pP5AxS7y3oaNaxV.VJCz3CO1y84peFXahHK893.oTSnb4bG', 'doctor', '', NULL, 1, '2026-05-28 17:06:59'),
-(23, 'Ahmed Saqllah', 'ahmed2@gmial.com', '$2y$10$r.pjhu7U/D7vNq.pwxaNoOrOzfVW0nXztRONYMhqjUo8FYyFyTgpq', 'patient', '', NULL, 1, '2026-05-31 10:58:16'),
-(24, 'Dr.Fadil Naim', 'fadil@gmail.com', '$2y$10$MgTgUJTHhBkcNgMeqU4PQe/.TUfWkZINI9P7Ae1pBrw2WQil4oZmG', 'doctor', '', NULL, 1, '2026-05-31 10:59:06'),
-(25, 'Dr.Fadil Naim', 'fa22dil@gmail.com', '$2y$10$tJtkhsagmuHrj1gzTPnsXeSe/6fz0D5uYzLEIOIWRsf5rAQNPHsh2', 'doctor', '', NULL, 1, '2026-05-31 11:03:56'),
-(26, 'Dr.Osama Saleh', 'osama11@gmail.com', '$2y$10$eBZOrz1xLSF9ReO0QAgaG.JE3R7/QPDmUtUDXFYfMvGehcAm1K88a', 'doctor', '', NULL, 1, '2026-05-31 11:10:22'),
-(27, 'Dr.Osama Saleh', 'osamaAlshami22@gmail.com', '$2y$10$9estzt91.MCz5j.0cv6dLOjZvHp5o6T0vyBGSMFxeFcwspxMJbiUu', 'doctor', '0000000000', NULL, 1, '2026-05-31 11:13:43'),
-(28, 'Assad Salem', 'assadf22@gmail.com', '$2y$10$Jc6kSyLVV2YO6yF4.BEYs.rfuHcKKsUoyEgOt9vfUL.3o43XJyBkC', 'patient', '3123232321', NULL, 1, '2026-05-31 12:01:32'),
-(29, 'Dr.Osama Saleh', 'osama123211@gmail.com', '$2y$10$9SypdPx4OFH1QVqzmAKPVupQ.jvGGdteMRqJF2l/NAUQHCSCjVYxy', 'doctor', '', NULL, 1, '2026-05-31 20:42:03'),
-(30, 'sacascsc', 'dawmdwmd@gmail.com', '$2y$10$7n2cWKeG8q.uADscK3J6eejeDV1BkODhbF1Qr3XIjPVQ8sZulpBqm', 'doctor', '0594142412424', NULL, 1, '2026-05-31 20:44:06'),
-(32, 'Mazen Saqallah', 'aa@gmail.com', '$2y$10$AD8F.6VBkrmfoQte9FDDPOgCbM/61kE4KUdeMvDGn4Z0j2y.yewnS', 'doctor', '0000000000', NULL, 1, '2026-06-03 07:56:43');
+(1, 'System Admin', 'admin@clinic.com', '$2y$10$QKvga9mENMIHtepEmwj5xOOwGzmCpzhQhpdUgbV8NCfMzE3fqN1QK', 'admin', '0599000000', NULL, 1, '2026-06-03 09:14:14'),
+(2, 'Dr. Ahmed Marwan', 'doctor@clinic.com', '$2y$10$JvJSzMzbCRguJbmbP654TOej5rSRtKU7WP2pLw8TZh8NKX3pQoQfm', 'doctor', '0599100001', NULL, 1, '2026-06-03 09:14:14'),
+(3, 'Dr. Sara Khalidi', 'doctor1@clinic.com', '$2y$10$JvJSzMzbCRguJbmbP654TOej5rSRtKU7WP2pLw8TZh8NKX3pQoQfm', 'doctor', '0599100002', NULL, 1, '2026-06-03 09:14:14'),
+(4, 'Dr. Mohammad Omari', 'doctor2@clinic.com', '$2y$10$JvJSzMzbCRguJbmbP654TOej5rSRtKU7WP2pLw8TZh8NKX3pQoQfm', 'doctor', '0599100003', NULL, 1, '2026-06-03 09:14:14'),
+(5, 'Dr. Lina Haddad', 'doctor3@clinic.com', '$2y$10$JvJSzMzbCRguJbmbP654TOej5rSRtKU7WP2pLw8TZh8NKX3pQoQfm', 'doctor', '0599100004', NULL, 1, '2026-06-03 09:14:14'),
+(6, 'Dr. Khaled Nabulsi', 'doctor4@clinic.com', '$2y$10$JvJSzMzbCRguJbmbP654TOej5rSRtKU7WP2pLw8TZh8NKX3pQoQfm', 'doctor', '0599100005', NULL, 1, '2026-06-03 09:14:14'),
+(7, 'Abdul Rahman Nawati', 'patient@clinic.com', '$2y$10$aYXwLOqkX3awQlnRa5viiepCXaREQacBkUcSEZ1ii6ewMkMp4k6Ia', 'patient', '0599200001', NULL, 1, '2026-06-03 09:14:14'),
+(8, 'Ahmed Sheikh', 'patient1@clinic.com', '$2y$10$aYXwLOqkX3awQlnRa5viiepCXaREQacBkUcSEZ1ii6ewMkMp4k6Ia', 'patient', '0599200002', NULL, 1, '2026-06-03 09:14:14'),
+(9, 'Khaled Awad', 'patient2@clinic.com', '$2y$10$aYXwLOqkX3awQlnRa5viiepCXaREQacBkUcSEZ1ii6ewMkMp4k6Ia', 'patient', '0599200003', NULL, 1, '2026-06-03 09:14:14'),
+(10, 'Mona Salama', 'patient3@clinic.com', '$2y$10$aYXwLOqkX3awQlnRa5viiepCXaREQacBkUcSEZ1ii6ewMkMp4k6Ia', 'patient', '0599200004', NULL, 1, '2026-06-03 09:14:14'),
+(11, 'Reem Hamouri', 'patient4@clinic.com', '$2y$10$aYXwLOqkX3awQlnRa5viiepCXaREQacBkUcSEZ1ii6ewMkMp4k6Ia', 'patient', '0599200005', NULL, 1, '2026-06-03 09:14:14'),
+(12, 'Yousef Abdullah', 'patient5@clinic.com', '$2y$10$aYXwLOqkX3awQlnRa5viiepCXaREQacBkUcSEZ1ii6ewMkMp4k6Ia', 'patient', '0599200006', NULL, 1, '2026-06-03 09:14:14'),
+(13, 'Nour Qasim', 'patient6@clinic.com', '$2y$10$aYXwLOqkX3awQlnRa5viiepCXaREQacBkUcSEZ1ii6ewMkMp4k6Ia', 'patient', '0599200007', NULL, 1, '2026-06-03 09:14:14'),
+(14, 'Tamer Zidan', 'patient7@clinic.com', '$2y$10$aYXwLOqkX3awQlnRa5viiepCXaREQacBkUcSEZ1ii6ewMkMp4k6Ia', 'patient', '0599200008', NULL, 1, '2026-06-03 09:14:14'),
+(15, 'Heba Jamal', 'patient8@clinic.com', '$2y$10$aYXwLOqkX3awQlnRa5viiepCXaREQacBkUcSEZ1ii6ewMkMp4k6Ia', 'patient', '0599200009', NULL, 1, '2026-06-03 09:14:14'),
+(16, 'Salma Ibrahim', 'patient9@clinic.com', '$2y$10$aYXwLOqkX3awQlnRa5viiepCXaREQacBkUcSEZ1ii6ewMkMp4k6Ia', 'patient', '0599200010', NULL, 1, '2026-06-03 09:14:14');
 
 --
 -- Indexes for dumped tables
@@ -247,31 +241,31 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `appointments`
 --
 ALTER TABLE `appointments`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
 -- AUTO_INCREMENT for table `doctors`
 --
 ALTER TABLE `doctors`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `prescriptions`
 --
 ALTER TABLE `prescriptions`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `specializations`
 --
 ALTER TABLE `specializations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- Constraints for dumped tables

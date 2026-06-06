@@ -4,12 +4,13 @@ require_once 'views/partials/header.php';
 require_once 'views/partials/navbar.php';
 require_once 'views/partials/sidebar.php';
 
-// القيم المحفوظة بعد validation error (تعبّى من $old في book())
+
 $oldPatient = (int) ($old['patient_id'] ?? 0);
 $oldDoctor  = (int) ($old['doctor_id']  ?? 0);
 $oldTime    = $old['appt_time'] ?? '';
 $oldReason  = htmlspecialchars($old['reason'] ?? '', ENT_QUOTES);
-// appt_date لا نعيدها عمداً — المستخدم يختار تاريخاً صحيحاً
+
+
 ?>
 
 <div class="content-wrapper">
@@ -153,7 +154,8 @@ $oldReason  = htmlspecialchars($old['reason'] ?? '', ENT_QUOTES);
 </div>
 
 <script>
-    // تعبية حقل Specialization عند تغيير الطبيب
+
+
     function updateSpec() {
         var sel = document.getElementById('doctor_id');
         var opt = sel.options[sel.selectedIndex];
@@ -162,7 +164,7 @@ $oldReason  = htmlspecialchars($old['reason'] ?? '', ENT_QUOTES);
 
     document.getElementById('doctor_id').addEventListener('change', updateSpec);
 
-    // تعبية Specialization عند تحميل الصفحة (لو رجعنا بعد error)
+
     window.addEventListener('DOMContentLoaded', function () {
         var sel = document.getElementById('doctor_id');
         if (sel.value) updateSpec();

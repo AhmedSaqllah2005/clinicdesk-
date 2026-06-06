@@ -18,13 +18,14 @@ class DoctorController
     {
         Auth::requireRole('admin');
 
-        $page = (int) ($_GET['p'] ?? 1);
+        $page   = (int) ($_GET['p'] ?? 1);
+        $search = trim($_GET['search'] ?? '');
 
-        $allDoctors   = $this->doctorModel->getAll();
+        $allDoctors   = $this->doctorModel->searchDoctors($search);
         $totalDoctors = count($allDoctors);
         $paginator    = new Paginator($totalDoctors, ITEMS_PER_PAGE, $page);
 
-        // Paginate manually
+
         $doctors = array_slice($allDoctors, $paginator->offset(), ITEMS_PER_PAGE);
 
         $specializations = $this->specializationModel->getAll();
@@ -40,26 +41,26 @@ class DoctorController
             die("Invalid Request");
         }
 
-        // [FIX-2] إضافة CSRF check — كان مفقوداً في store الأطباء
+
         if (!CSRF::validateToken($_POST['csrf_token'] ?? '')) {
             $_SESSION['flash'] = ['type' => 'danger', 'message' => 'Invalid CSRF token'];
             redirect('index.php?page=doctors');
         }
 
-        // [M4] التحقق من صيغة الإيميل
+
         $email = trim($_POST['email']);
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $_SESSION['flash'] = ['type' => 'danger', 'message' => 'Invalid email format'];
             redirect('index.php?page=doctors');
         }
 
-        // التحقق من طول كلمة المرور — الحد الأدنى 6 أحرف
+
         if (strlen($_POST['password']) < 6) {
             $_SESSION['flash'] = ['type' => 'danger', 'message' => 'Password must be at least 6 characters'];
             redirect('index.php?page=doctors');
         }
 
-        // Create user first
+
         $userData = [
             'name'     => trim($_POST['name']),
             'email'    => $email,
@@ -75,12 +76,13 @@ class DoctorController
 
         $userId = $this->userModel->create($userData);
 
-        // ── Transaction: إذا فشل إنشاء سجل الطبيب، احذف المستخدم ──────────
+
         $db = Database::getInstance();
         $db->beginTransaction();
 
         try {
-            // Create doctor record
+
+
             $availableDays = isset($_POST['available_days'])
                 ? implode(',', $_POST['available_days'])
                 : 'Sun,Mon,Tue,Wed,Thu';
@@ -94,14 +96,14 @@ class DoctorController
                 'years_experience'  => (int) ($_POST['years_experience'] ?? 0),
             ];
 
-            // التحقق من أن التخصص محدد
+
             if ($doctorData['specialization_id'] <= 0) {
                 throw new Exception('Please select a specialization.');
             }
 
             $this->doctorModel->create($doctorData);
 
-            // ── رفع صورة الطبيب (اختياري) ────────────────────────────────
+
             if (isset($_FILES['doctor_photo']) && $_FILES['doctor_photo']['error'] === UPLOAD_ERR_OK) {
                 $photoName = $this->uploadDoctorPhoto($_FILES['doctor_photo'], $userId);
                 if ($photoName !== false && $photoName !== null) {
@@ -113,7 +115,8 @@ class DoctorController
 
         } catch (Exception $e) {
             $db->rollback();
-            // احذف المستخدم اللي اتأضيف عشان ما يبقى يتيم
+
+
             $this->userModel->deleteUser($userId);
             $_SESSION['flash'] = ['type' => 'danger', 'message' => $e->getMessage()];
             redirect('index.php?page=doctors');
@@ -154,14 +157,14 @@ class DoctorController
 
         $userId = (int) $_POST['user_id'];
 
-        // [M4] التحقق من صيغة الإيميل عند التحديث
+
         $email = trim($_POST['email']);
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $_SESSION['flash'] = ['type' => 'danger', 'message' => 'Invalid email format'];
             redirect('index.php?page=doctors');
         }
 
-        // Update user data
+
         $userData = [
             'name'  => trim($_POST['name']),
             'email' => $email,
@@ -169,7 +172,7 @@ class DoctorController
         ];
         $this->userModel->update($userId, $userData);
 
-        // Update doctor data
+
         $doctor = $this->doctorModel->findByUserId($userId);
         if ($doctor) {
             $availableDays = isset($_POST['available_days']) ? implode(',', $_POST['available_days']) : 'Sun,Mon,Tue,Wed,Thu';
@@ -182,11 +185,12 @@ class DoctorController
             ];
             $this->doctorModel->update($doctor['id'], $doctorData);
 
-            // ── رفع صورة الطبيب إذا تم اختيارها ─────────────────────────
+
             if (isset($_FILES['doctor_photo']) && $_FILES['doctor_photo']['error'] === UPLOAD_ERR_OK) {
                 $photoName = $this->uploadDoctorPhoto($_FILES['doctor_photo'], $userId);
                 if ($photoName !== false && $photoName !== null) {
-                    // احذف الصورة القديمة إذا كانت موجودة
+
+
                     if (!empty($doctor['photo'])) {
                         $oldPath = UPLOAD_PATH . 'doctor_photos/' . $doctor['photo'];
                         if (file_exists($oldPath)) {
@@ -236,7 +240,7 @@ class DoctorController
         $totalItems   = $this->appointmentModel->countFiltered('doctor', $doctorId, $filters);
         $paginator    = new Paginator($totalItems, ITEMS_PER_PAGE, $page);
 
-        // [M8] استبدال DB Query المباشر بـ AppointmentModel
+
         $todayAppointments = $this->appointmentModel->getTodayAppointmentsByDoctor($doctorId);
 
         $todayCount = $this->appointmentModel->getTodayCount($doctorId);
@@ -296,7 +300,7 @@ class DoctorController
 
         $userId = Auth::userId();
 
-        // [M4] التحقق من صيغة الإيميل
+
         $email = trim($_POST['email']);
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $_SESSION['flash'] = [
@@ -324,19 +328,17 @@ class DoctorController
         redirect('index.php?page=doctor_profile');
     }
 
-    // =========================================================================
-    // uploadDoctorPhoto — رفع صورة الطبيب مع التحقق الكامل
-    // =========================================================================
 
     private function uploadDoctorPhoto(array $file, int $userId): ?string
     {
-        // 1. تحقق من الحجم
+
+
         if ($file['size'] > MAX_IMAGE_SIZE) {
             $_SESSION['flash'] = ['type' => 'danger', 'message' => 'Photo too large. Maximum size is 1MB.'];
             return false;
         }
 
-        // 2. تحقق من نوع الملف بـ getimagesize — أكثر أماناً من MIME فقط
+
         $imageInfo = @getimagesize($file['tmp_name']);
         if ($imageInfo === false) {
             $_SESSION['flash'] = ['type' => 'danger', 'message' => 'Invalid image file.'];
@@ -349,18 +351,18 @@ class DoctorController
             return false;
         }
 
-        // 3. إنشاء مجلد الرفع إذا لم يكن موجوداً
+
         $uploadDir = UPLOAD_PATH . 'doctor_photos/';
         if (!is_dir($uploadDir)) {
             mkdir($uploadDir, 0755, true);
         }
 
-        // 4. اسم الملف الآمن
+
         $ext      = ($imageInfo[2] === IMAGETYPE_JPEG) ? 'jpg' : 'png';
         $filename = 'doctor_' . $userId . '_' . time() . '.' . $ext;
         $destPath = $uploadDir . $filename;
 
-        // 5. نقل الملف
+
         if (!move_uploaded_file($file['tmp_name'], $destPath)) {
             $_SESSION['flash'] = ['type' => 'danger', 'message' => 'Failed to save photo. Please try again.'];
             return false;

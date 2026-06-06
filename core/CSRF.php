@@ -6,7 +6,7 @@ class CSRF {
         }
         return $_SESSION['csrf_token'];
     }
-    
+
     public static function validateToken($token) {
         if (empty($_SESSION['csrf_token'])) {
             return false;

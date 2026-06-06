@@ -4,12 +4,12 @@ require_once 'views/partials/header.php';
 require_once 'views/partials/navbar.php';
 require_once 'views/partials/sidebar.php';
 
-// ── تحديد الدور ────────────────────────────────────────────────────────────
+
 $currentRole  = Auth::role();
 $isPatient    = ($currentRole === 'patient');
 $isAdmin      = ($currentRole === 'admin');
 
-// ── للـ admin فقط: التحقق من فلتر اليوم ────────────────────────────────────
+
 $todayFilter   = !$isPatient && ($_GET['filter'] ?? '') === 'today';
 
 $currentStatus = $_GET['status'] ?? '';
@@ -18,7 +18,7 @@ $patientName   = $_GET['patient_name'] ?? '';
 $startDate     = $todayFilter ? date('Y-m-d') : ($_GET['start_date'] ?? '');
 $endDate       = $todayFilter ? date('Y-m-d') : ($_GET['end_date'] ?? '');
 
-// ── صفحة الفلتر الصحيحة حسب الدور ─────────────────────────────────────────
+
 $filterPage    = $isPatient ? 'my_appointments' : 'appointments';
 ?>
 

@@ -21,7 +21,7 @@ require_once 'views/partials/sidebar.php';
             </div>
         </div>
     </div>
-    
+
     <section class="content">
         <div class="container-fluid">
             <?php require_once 'views/partials/alerts.php'; ?>
@@ -181,6 +181,27 @@ require_once 'views/partials/sidebar.php';
 
             </div>
             <div class="card">
+                <!-- Search Filter -->
+                <div class="card-header">
+                    <form action="index.php" method="GET" class="form-inline">
+                        <input type="hidden" name="page" value="doctors">
+                        <div class="input-group" style="max-width:520px;">
+                            <input type="text" name="search" class="form-control"
+                                   placeholder="Search by Name or Email..."
+                                   value="<?= htmlspecialchars($_GET['search'] ?? '', ENT_QUOTES) ?>">
+                            <div class="input-group-append">
+                                <button class="btn btn-primary" type="submit">
+                                    <i class="fas fa-search"></i> Search
+                                </button>
+                                <?php if (!empty($_GET['search'])): ?>
+                                    <a href="index.php?page=doctors" class="btn btn-secondary">
+                                        <i class="fas fa-times"></i> Clear
+                                    </a>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    </form>
+                </div>
                 <div class="card-body table-responsive p-0">
                     <table class="table table-hover table-striped">
                         <thead>
@@ -236,23 +257,24 @@ require_once 'views/partials/sidebar.php';
                     </table>
                 </div>
                 <div class="card-footer clearfix">
+                    <?php $searchParam = urlencode($_GET['search'] ?? ''); ?>
                     <ul class="pagination pagination-sm m-0 float-right">
 
                         <?php if ($paginator->hasPrev()): ?>
                             <li class="page-item">
-                                <a class="page-link" href="?page=doctors&p=<?= $paginator->getPrevPage() ?>">« Prev</a>
+                                <a class="page-link" href="?page=doctors&p=<?= $paginator->getPrevPage() ?>&search=<?= $searchParam ?>">« Prev</a>
                             </li>
                         <?php endif; ?>
 
                         <?php for ($i = 1; $i <= $paginator->totalPages(); $i++): ?>
                             <li class="page-item <?= $i === $paginator->currentPage() ? 'active' : '' ?>">
-                                <a class="page-link" href="?page=doctors&p=<?= $i ?>"><?= $i ?></a>
+                                <a class="page-link" href="?page=doctors&p=<?= $i ?>&search=<?= $searchParam ?>"><?= $i ?></a>
                             </li>
                         <?php endfor; ?>
 
                         <?php if ($paginator->hasNext()): ?>
                             <li class="page-item">
-                                <a class="page-link" href="?page=doctors&p=<?= $paginator->getNextPage() ?>">Next »</a>
+                                <a class="page-link" href="?page=doctors&p=<?= $paginator->getNextPage() ?>&search=<?= $searchParam ?>">Next »</a>
                             </li>
                         <?php endif; ?>
 

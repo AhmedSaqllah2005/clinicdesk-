@@ -27,7 +27,7 @@ require_once 'views/partials/sidebar.php';
         <div class="container-fluid">
             <!-- ALERTS -->
             <?php require_once 'views/partials/alerts.php'; ?>
-            
+
             <div class="card card-warning">
                 <div class="card-header">
                     <h3 class="card-title">
@@ -39,37 +39,37 @@ require_once 'views/partials/sidebar.php';
                     <input type="hidden" name="csrf_token" value="<?= CSRF::generateToken() ?>">
                     <input type="hidden" name="id" value="<?= $user['id'] ?>">
                     <input type="hidden" name="role" value="<?= $user['role'] ?>">
-                    
+
                     <div class="card-body">
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label>Full Name *</label>
-                                    <input type="text" name="name" class="form-control" 
+                                    <input type="text" name="name" class="form-control"
                                            value="<?= htmlspecialchars($user['name']) ?>" required>
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label>Email *</label>
-                                    <input type="email" name="email" class="form-control" 
+                                    <input type="email" name="email" class="form-control"
                                            value="<?= htmlspecialchars($user['email']) ?>" required>
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label>Phone</label>
-                                    <input type="text" name="phone" class="form-control" 
+                                    <input type="text" name="phone" class="form-control"
                                            value="<?= htmlspecialchars($user['phone'] ?? '') ?>">
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label>Role</label>
-                                    <input type="text" class="form-control" 
+                                    <input type="text" class="form-control"
                                            value="<?= ucfirst($user['role']) ?>" disabled>
                                 </div>
                             </div>
@@ -86,7 +86,7 @@ require_once 'views/partials/sidebar.php';
                                         <select name="specialization_id" class="form-control">
                                             <option value="">Select Specialization</option>
                                             <?php foreach ($specializations as $spec): ?>
-                                                <option value="<?= $spec['id'] ?>" 
+                                                <option value="<?= $spec['id'] ?>"
                                                     <?= ($doctor['specialization_id'] == $spec['id']) ? 'selected' : '' ?>>
                                                     <?= htmlspecialchars($spec['name']) ?>
                                                 </option>
@@ -97,14 +97,14 @@ require_once 'views/partials/sidebar.php';
                                 <div class="col-md-4">
                                     <div class="form-group">
                                         <label>Consultation Fee (USD)</label>
-                                        <input type="number" name="consultation_fee" class="form-control" step="0.01" 
+                                        <input type="number" name="consultation_fee" class="form-control" step="0.01"
                                                value="<?= $doctor['consultation_fee'] ?? 0 ?>">
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="form-group">
                                         <label>Years of Experience</label>
-                                        <input type="number" name="years_experience" class="form-control" 
+                                        <input type="number" name="years_experience" class="form-control"
                                                value="<?= $doctor['years_experience'] ?? 0 ?>">
                                     </div>
                                 </div>
@@ -121,7 +121,7 @@ require_once 'views/partials/sidebar.php';
                                             <?php foreach ($dayNames as $key => $name): ?>
                                                 <div class="col-md-2">
                                                     <div class="form-check">
-                                                        <input type="checkbox" name="available_days[]" value="<?= $key ?>" class="form-check-input" 
+                                                        <input type="checkbox" name="available_days[]" value="<?= $key ?>" class="form-check-input"
                                                                <?= in_array($key, $availableDaysArray) ? 'checked' : '' ?>>
                                                         <label class="form-check-label"><?= $name ?></label>
                                                     </div>
@@ -141,7 +141,7 @@ require_once 'views/partials/sidebar.php';
                             </div>
                         <?php endif; ?>
                     </div>
-                    
+
                     <div class="card-footer">
                         <button type="submit" class="btn btn-primary">
                             <i class="fas fa-save"></i> Update User

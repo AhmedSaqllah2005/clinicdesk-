@@ -80,6 +80,28 @@
                     <h3 class="card-title">All Patients</h3>
                 </div>
 
+                <!-- Search Filter -->
+                <div class="card-body border-bottom pb-3">
+                    <form action="index.php" method="GET" class="form-inline">
+                        <input type="hidden" name="page" value="patients">
+                        <div class="input-group" style="max-width:480px;">
+                            <input type="text" name="search" class="form-control"
+                                   placeholder="Search by Name or Email..."
+                                   value="<?= htmlspecialchars($_GET['search'] ?? '', ENT_QUOTES) ?>">
+                            <div class="input-group-append">
+                                <button class="btn btn-primary" type="submit">
+                                    <i class="fas fa-search"></i> Search
+                                </button>
+                                <?php if (!empty($_GET['search'])): ?>
+                                    <a href="index.php?page=patients" class="btn btn-secondary">
+                                        <i class="fas fa-times"></i> Clear
+                                    </a>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
                 <div class="card-body table-responsive">
 
                     <table class="table table-bordered table-striped table-hover" id="patientsTable">

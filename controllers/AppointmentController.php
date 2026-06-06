@@ -15,9 +15,6 @@ class AppointmentController
         $this->prescriptionModel = new PrescriptionModel();
     }
 
-    // =========================================================================
-    // index — Admin: قائمة كل المواعيد مع فلتر
-    // =========================================================================
 
     public function index()
     {
@@ -25,7 +22,7 @@ class AppointmentController
 
         $page = max(1, (int) ($_GET['p'] ?? 1));
 
-        // لما يجي من "Today's Appointments" في الداشبورد
+
         $todayFilter = ($_GET['filter'] ?? '') === 'today';
 
         $filters = [
@@ -46,9 +43,6 @@ class AppointmentController
         require 'views/appointments/index.php';
     }
 
-    // =========================================================================
-    // book — Patient/Admin: عرض نموذج الحجز (GET)
-    // =========================================================================
 
     public function book()
     {
@@ -56,22 +50,19 @@ class AppointmentController
 
         $doctors = $this->doctorModel->getAll();
 
-        // استرجاع القيم المحفوظة بعد validation error
+
         $old = $_SESSION['old'] ?? [];
         unset($_SESSION['old']);
 
         require 'views/appointments/book.php';
     }
 
-    // =========================================================================
-    // store — Patient/Admin: حفظ الموعد (POST)
-    // =========================================================================
 
     public function store()
     {
         Auth::requireRole('patient', 'admin');
 
-        // ── CSRF ──────────────────────────────────────────────────────────────
+
         if (!CSRF::validateToken($_POST['csrf_token'] ?? '')) {
             $_SESSION['flash'] = ['type' => 'danger', 'message' => 'Invalid security token.'];
             redirect('index.php?page=appointments');
@@ -86,10 +77,11 @@ class AppointmentController
         $time     = trim($_POST['appt_time'] ?? '');
         $reason   = trim($_POST['reason'] ?? '');
 
-        // ── دالة مساعدة: احفظ البيانات وارجع للفورم ──────────────────────────
+
         $redirectWithOld = function (string $message) use ($patientId, $doctorId, $time, $reason) {
             $_SESSION['flash'] = ['type' => 'danger', 'message' => $message];
-            // نحفظ كل شي ما عدا التاريخ (هو السبب في الخطأ غالباً)
+
+
             $_SESSION['old'] = [
                 'patient_id' => $patientId,
                 'doctor_id'  => $doctorId,
@@ -99,7 +91,7 @@ class AppointmentController
             redirect('index.php?page=appointments&action=book');
         };
 
-        // ── 1. حقول إلزامية ───────────────────────────────────────────────────
+
         if (!$doctorId || !$date || !$time || !$reason) {
             $redirectWithOld('All fields are required.');
         }
@@ -108,12 +100,12 @@ class AppointmentController
             $redirectWithOld('Please select a patient.');
         }
 
-        // ── 2. التاريخ يجب ألا يكون في الماضي ───────────────────────────────
+
         if ($date < date('Y-m-d')) {
             $redirectWithOld('Appointment date cannot be in the past.');
         }
 
-        // ── 3. التحقق من أن اليوم ضمن أيام عمل الطبيب ───────────────────────
+
         $availableDays = $this->doctorModel->getAvailableDays($doctorId);
         $dayOfWeek     = date('D', strtotime($date));
 
@@ -125,12 +117,12 @@ class AppointmentController
             );
         }
 
-        // ── 4. فحص التعارض ────────────────────────────────────────────────────
+
         if ($this->appointmentModel->hasConflict($doctorId, $date, $time)) {
             $redirectWithOld('This time slot is already booked. Please choose another time.');
         }
 
-        // ── 5. حفظ الموعد ────────────────────────────────────────────────────
+
         $this->appointmentModel->book([
             'patient_id' => $patientId,
             'doctor_id'  => $doctorId,
@@ -145,9 +137,6 @@ class AppointmentController
         redirect($redirect);
     }
 
-    // =========================================================================
-    // updateStatus — Doctor/Admin: تغيير حالة الموعد
-    // =========================================================================
 
     public function updateStatus()
     {
@@ -197,9 +186,6 @@ class AppointmentController
         }
     }
 
-    // =========================================================================
-    // myAppointments — Patient: مواعيده الخاصة
-    // =========================================================================
 
     public function myAppointments()
     {
@@ -228,9 +214,6 @@ class AppointmentController
         require 'views/appointments/index.php';
     }
 
-    // =========================================================================
-    // cancel — Patient: إلغاء موعد pending
-    // =========================================================================
 
     public function cancel()
     {
@@ -259,9 +242,6 @@ class AppointmentController
         redirect('index.php?page=my_appointments');
     }
 
-    // =========================================================================
-    // delete — Admin: حذف موعد
-    // =========================================================================
 
     public function delete()
     {
@@ -289,9 +269,6 @@ class AppointmentController
         redirect('index.php?page=appointments');
     }
 
-    // =========================================================================
-    // exportCSV — Admin: تصدير المواعيد
-    // =========================================================================
 
     public function exportCSV()
     {

@@ -4,17 +4,18 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>ClinicDesk | Login</title>
-    
+
     <!-- Google Font: Source Sans Pro -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <!-- AdminLTE -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.1.0/dist/css/adminlte.min.css">
-    
+
     <style>
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg,
+
             height: 100vh;
         }
         .login-card {
@@ -48,7 +49,7 @@
 
             <form action="index.php?page=login" method="POST">
                 <input type="hidden" name="csrf_token" value="<?= CSRF::generateToken() ?>">
-                
+
                 <div class="input-group mb-3">
                     <input type="email" name="email" class="form-control" placeholder="Email" required autofocus>
                     <div class="input-group-append">
@@ -57,7 +58,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="input-group mb-3">
                     <input type="password" name="password" class="form-control" placeholder="Password" required>
                     <div class="input-group-append">
@@ -66,7 +67,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="row">
                     <div class="col-12">
                         <button type="submit" class="btn btn-primary btn-block">

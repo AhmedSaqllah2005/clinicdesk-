@@ -29,7 +29,7 @@ class ReportController
             }
         }
 
-        // [M10] استخدام getAllForExport لجلب كل البيانات دون تقطيع الصفحات
+
         $appointments = $this->appointmentModel->getAllForExport($filters);
         $doctors      = $this->doctorModel->getAll();
 
@@ -70,10 +70,10 @@ class ReportController
 
         $output = fopen('php://output', 'w');
 
-        // UTF-8 BOM
+
         fprintf($output, chr(0xEF) . chr(0xBB) . chr(0xBF));
 
-        // رؤوس الأعمدة
+
         fputcsv($output, [
             'ID',
             'Patient',
@@ -85,7 +85,7 @@ class ReportController
             'Reason'
         ], ';');
 
-        // البيانات
+
         foreach ($appointments as $app) {
 
             fputcsv($output, [

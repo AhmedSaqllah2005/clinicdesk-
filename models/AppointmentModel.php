@@ -4,15 +4,14 @@ require_once 'BaseModel.php';
 class AppointmentModel extends BaseModel
 {
 
-    // ============= الدوال الأساسية =============
 
     public function findById($id)
     {
-        $sql = "SELECT a.*, p.name as patient_name, u.name as doctor_name 
-                FROM appointments a 
-                JOIN users p ON a.patient_id = p.id 
-                JOIN doctors d ON a.doctor_id = d.id 
-                JOIN users u ON d.user_id = u.id 
+        $sql = "SELECT a.*, p.name as patient_name, u.name as doctor_name
+                FROM appointments a
+                JOIN users p ON a.patient_id = p.id
+                JOIN doctors d ON a.doctor_id = d.id
+                JOIN users u ON d.user_id = u.id
                 WHERE a.id = ?";
         $result = $this->execute($sql, 'i', [$id]);
         return $result->fetch_assoc();
@@ -20,7 +19,7 @@ class AppointmentModel extends BaseModel
 
     public function book($data)
     {
-        $sql = "INSERT INTO appointments (patient_id, doctor_id, appt_date, appt_time, reason, status) 
+        $sql = "INSERT INTO appointments (patient_id, doctor_id, appt_date, appt_time, reason, status)
                 VALUES (?, ?, ?, ?, ?, 'pending')";
         return $this->execute($sql, 'iisss', [
             $data['patient_id'],
@@ -33,8 +32,9 @@ class AppointmentModel extends BaseModel
 
     public function hasConflict($doctorId, $date, $time)
     {
-        // [M16] استثناء المواعيد الملغاة من فحص التعارض
-        $sql = "SELECT id FROM appointments 
+
+
+        $sql = "SELECT id FROM appointments
                 WHERE doctor_id = ? AND appt_date = ? AND appt_time = ?
                 AND status != 'cancelled'";
         $result = $this->execute($sql, 'iss', [$doctorId, $date, $time]);
@@ -65,7 +65,6 @@ class AppointmentModel extends BaseModel
         return $this->execute($sql, $types, $params);
     }
 
-    // ============= دوال الإحصائيات =============
 
     public function countAll()
     {
@@ -94,13 +93,13 @@ class AppointmentModel extends BaseModel
 
     public function getDashboardStats($doctorId)
     {
-        $sql = "SELECT 
+        $sql = "SELECT
                     COUNT(*) as total,
                     SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending,
                     SUM(CASE WHEN status = 'confirmed' THEN 1 ELSE 0 END) as confirmed,
                     SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed,
                     SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END) as cancelled
-                FROM appointments 
+                FROM appointments
                 WHERE doctor_id = ?";
         $result = $this->execute($sql, 'i', [$doctorId]);
         $row    = $result->fetch_assoc();
@@ -113,12 +112,11 @@ class AppointmentModel extends BaseModel
         ];
     }
 
-    // ============= دوال جلب البيانات =============
 
     public function getByPatient($patientId, $limit = 10, $offset = 0)
     {
         return $this->fetchAll("
-        SELECT 
+        SELECT
             appointments.*,
             users.name AS doctor_name
         FROM appointments
@@ -131,13 +129,13 @@ class AppointmentModel extends BaseModel
     ", "i", [$patientId]);
     }
 
-    // [M15] دالة جديدة تدعم الفلترة بالحالة للمريض
+
     public function getByPatientFiltered($patientId, $page = 1, $filters = [])
     {
         $offset = ($page - 1) * ITEMS_PER_PAGE;
 
         $sql = "
-        SELECT 
+        SELECT
             appointments.*,
             users.name AS doctor_name
         FROM appointments
@@ -169,7 +167,7 @@ class AppointmentModel extends BaseModel
         $offset = ($page - 1) * ITEMS_PER_PAGE;
 
         $sql = "
-        SELECT 
+        SELECT
             a.*,
             p.name AS patient_name,
             u.name AS doctor_name
@@ -196,7 +194,7 @@ class AppointmentModel extends BaseModel
             $types   .= 's';
         }
 
-        $sql .= " 
+        $sql .= "
         ORDER BY a.appt_date DESC, a.appt_time DESC
         LIMIT ? OFFSET ?
     ";
@@ -215,7 +213,7 @@ class AppointmentModel extends BaseModel
         $offset = ($page - 1) * ITEMS_PER_PAGE;
 
         $sql = "
-    SELECT 
+    SELECT
         a.*,
         p.name AS patient_name,
         duser.name AS doctor_name,
@@ -278,8 +276,8 @@ class AppointmentModel extends BaseModel
 
     public function countFiltered($scope, $scopedId, $filters = [])
     {
-        // [FIX-3] إضافة JOIN وفلاتر admin (patient_name, doctor_id, start_date, end_date)
-        // كان الـ pagination يعطي أرقام غلط لأن count ما كانت تأخذ نفس الفلاتر اللي getAll تأخذها
+
+
         $sql = "SELECT COUNT(*) as total FROM appointments a
                 JOIN users p ON a.patient_id = p.id
                 JOIN doctors d ON a.doctor_id = d.id
@@ -343,15 +341,15 @@ class AppointmentModel extends BaseModel
 
     public function getAllForExport($filters = [])
     {
-        $sql = "SELECT a.*, 
-                   p.name as patient_name, 
-                   u.name as doctor_name, 
-                   s.name as specialization 
-            FROM appointments a 
-            JOIN users p ON a.patient_id = p.id 
-            JOIN doctors d ON a.doctor_id = d.id 
-            JOIN users u ON d.user_id = u.id 
-            LEFT JOIN specializations s ON d.specialization_id = s.id 
+        $sql = "SELECT a.*,
+                   p.name as patient_name,
+                   u.name as doctor_name,
+                   s.name as specialization
+            FROM appointments a
+            JOIN users p ON a.patient_id = p.id
+            JOIN doctors d ON a.doctor_id = d.id
+            JOIN users u ON d.user_id = u.id
+            LEFT JOIN specializations s ON d.specialization_id = s.id
             WHERE 1=1";
 
         $params = [];
@@ -383,16 +381,12 @@ class AppointmentModel extends BaseModel
         return $result->fetch_all(MYSQLI_ASSOC);
     }
 
-    // =========================================================================
-    // Dashboard Helper Methods — دوال مساعدة لـ DashboardController
-    // =========================================================================
 
-    // ── getWeeklyStats — إحصائيات الموعد للأسبوع الحالي ──────────────────
     public function getWeeklyStats()
     {
-        $sql = "SELECT status, COUNT(*) as total 
-                FROM appointments 
-                WHERE WEEK(appt_date) = WEEK(NOW()) 
+        $sql = "SELECT status, COUNT(*) as total
+                FROM appointments
+                WHERE WEEK(appt_date) = WEEK(NOW())
                 GROUP BY status";
         $result = $this->execute($sql);
 
@@ -403,64 +397,64 @@ class AppointmentModel extends BaseModel
         return $stats;
     }
 
-    // ── getTodayAppointmentsByDoctor — مواعيد الطبيب اليوم ───────────────
+
     public function getTodayAppointmentsByDoctor($doctorId)
     {
-        $sql = "SELECT a.*, p.name as patient_name 
-                FROM appointments a 
-                JOIN users p ON a.patient_id = p.id 
-                WHERE a.doctor_id = ? AND DATE(a.appt_date) = CURDATE() 
+        $sql = "SELECT a.*, p.name as patient_name
+                FROM appointments a
+                JOIN users p ON a.patient_id = p.id
+                WHERE a.doctor_id = ? AND DATE(a.appt_date) = CURDATE()
                 ORDER BY a.appt_time ASC";
         $result = $this->execute($sql, 'i', [$doctorId]);
         return $result->fetch_all(MYSQLI_ASSOC);
     }
 
-    // ── getActiveCountForPatient — عدد المواعيد النشطة للمريض ──────────
+
     public function getActiveCountForPatient($patientId)
     {
-        $sql = "SELECT COUNT(*) as total 
-                FROM appointments 
+        $sql = "SELECT COUNT(*) as total
+                FROM appointments
                 WHERE patient_id = ? AND status IN ('pending', 'confirmed')";
         $result = $this->execute($sql, 'i', [$patientId]);
         $row    = $result->fetch_assoc();
         return (int) ($row['total'] ?? 0);
     }
 
-    // ── getCompletedCountForPatient — عدد المواعيد المكتملة للمريض ──────
+
     public function getCompletedCountForPatient($patientId)
     {
-        $sql = "SELECT COUNT(*) as total 
-                FROM appointments 
+        $sql = "SELECT COUNT(*) as total
+                FROM appointments
                 WHERE patient_id = ? AND status = 'completed'";
         $result = $this->execute($sql, 'i', [$patientId]);
         $row    = $result->fetch_assoc();
         return (int) ($row['total'] ?? 0);
     }
 
-    // ── getNextAppointmentForPatient — الموعد القادم للمريض ─────────────
+
     public function getNextAppointmentForPatient($patientId)
     {
-        $sql = "SELECT a.*, u.name as doctor_name, s.name as specialization 
-                FROM appointments a 
-                JOIN doctors d ON a.doctor_id = d.id 
-                JOIN users u ON d.user_id = u.id 
-                LEFT JOIN specializations s ON d.specialization_id = s.id 
-                WHERE a.patient_id = ? AND DATE(a.appt_date) >= CURDATE() 
-                ORDER BY a.appt_date ASC 
+        $sql = "SELECT a.*, u.name as doctor_name, s.name as specialization
+                FROM appointments a
+                JOIN doctors d ON a.doctor_id = d.id
+                JOIN users u ON d.user_id = u.id
+                LEFT JOIN specializations s ON d.specialization_id = s.id
+                WHERE a.patient_id = ? AND DATE(a.appt_date) >= CURDATE()
+                ORDER BY a.appt_date ASC
                 LIMIT 1";
         $result = $this->execute($sql, 'i', [$patientId]);
         return $result->fetch_assoc();
     }
 
-    // ── getRecentAppointmentsForPatient — آخر 5 مواعيد للمريض ───────────
+
     public function getRecentAppointmentsForPatient($patientId, $limit = 5)
     {
-        $sql = "SELECT a.*, u.name as doctor_name 
-                FROM appointments a 
-                JOIN doctors d ON a.doctor_id = d.id 
-                JOIN users u ON d.user_id = u.id 
-                WHERE a.patient_id = ? 
-                ORDER BY a.appt_date DESC 
+        $sql = "SELECT a.*, u.name as doctor_name
+                FROM appointments a
+                JOIN doctors d ON a.doctor_id = d.id
+                JOIN users u ON d.user_id = u.id
+                WHERE a.patient_id = ?
+                ORDER BY a.appt_date DESC
                 LIMIT ?";
         $result = $this->execute($sql, 'ii', [$patientId, $limit]);
         return $result->fetch_all(MYSQLI_ASSOC);

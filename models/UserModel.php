@@ -121,9 +121,9 @@ class UserModel extends BaseModel
 
     public function getDoctors()
     {
-        $sql = "SELECT u.id, u.name, u.email, d.specialization_id 
-                FROM users u 
-                JOIN doctors d ON u.id = d.user_id 
+        $sql = "SELECT u.id, u.name, u.email, d.specialization_id
+                FROM users u
+                JOIN doctors d ON u.id = d.user_id
                 WHERE u.role = 'doctor'
                 ORDER BY u.name";
         $result = $this->execute($sql);
@@ -165,9 +165,6 @@ class UserModel extends BaseModel
         return $row['total'];
     }
 
-    // =========================================================================
-    // updatePassword — تحديث كلمة المرور مع hash آمن
-    // =========================================================================
 
     public function updatePassword($id, $newPassword)
     {

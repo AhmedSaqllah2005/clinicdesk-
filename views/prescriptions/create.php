@@ -15,15 +15,16 @@ require_once 'views/partials/sidebar.php';
     <section class="content">
         <div class="container-fluid">
             <?php require_once 'views/partials/alerts.php'; ?>
-            
+
             <div class="card card-success">
                 <div class="card-header">
-                    <h3>Prescription for Appointment #<?= $appointmentId ?></h3>
+                    <h3>Prescription for Appointment
+
                 </div>
                 <form action="index.php?page=store_prescription" method="POST" enctype="multipart/form-data">
                     <input type="hidden" name="csrf_token" value="<?= CSRF::generateToken() ?>">
                     <input type="hidden" name="appointment_id" value="<?= $appointmentId ?>">
-                    
+
                     <div class="card-body">
                         <div class="form-group">
                             <label>Patient Condition <span class="text-danger">*</span></label>
