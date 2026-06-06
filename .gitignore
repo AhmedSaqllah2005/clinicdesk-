@@ -1,0 +1,21 @@
+# DB credentials — never commit
+config/database.php
+
+# Uploaded files — not part of source code
+public/uploads/avatars/*
+public/uploads/doctor_photos/*
+public/uploads/prescriptions/*
+
+# Keep folder structure
+!public/uploads/avatars/.gitkeep
+!public/uploads/doctor_photos/.gitkeep
+!public/uploads/prescriptions/.gitkeep
+!public/uploads/prescriptions/.htaccess
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+*.swp
