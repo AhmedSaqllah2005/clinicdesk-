@@ -40,7 +40,9 @@ require_once 'views/partials/sidebar.php';
 
                             <tr>
                                 <th>Date</th>
+                                <th>Time</th>
                                 <th>Doctor</th>
+                                <th>Patient Condition</th>
                                 <th>Diagnosis</th>
                                 <th>Medications</th>
                             </tr>
@@ -49,21 +51,37 @@ require_once 'views/partials/sidebar.php';
 
                         <tbody>
 
+                            <?php if (empty($prescriptions)): ?>
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted p-4">
+                                        No prescriptions found.
+                                    </td>
+                                </tr>
+                            <?php else: ?>
+
                             <?php foreach ($prescriptions as $p): ?>
 
                                 <tr>
 
                                     <td><?= formatDate($p['appt_date']) ?></td>
 
-                                    <td><?= sanitize($p['doctor_name']) ?></td>
+                                    <td><?= isset($p['appt_time']) ? formatTime($p['appt_time']) : '—' ?></td>
 
-                                    <td><?= sanitize($p['diagnosis']) ?></td>
+                                    <td>
+                                        <strong><?= sanitize($p['doctor_name']) ?></strong>
+                                    </td>
+
+                                    <td><?= !empty($p['patient_condition']) ? nl2br(sanitize($p['patient_condition'])) : '<span class="text-muted">—</span>' ?></td>
+
+                                    <td><?= nl2br(sanitize($p['diagnosis'])) ?></td>
 
                                     <td><?= nl2br(sanitize($p['medications'])) ?></td>
 
                                 </tr>
 
                             <?php endforeach; ?>
+
+                            <?php endif; ?>
 
                         </tbody>
 

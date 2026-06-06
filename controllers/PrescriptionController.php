@@ -13,34 +13,28 @@ class PrescriptionController
         $this->doctorModel = new DoctorModel();
     }
 
-    // =========================================================================
-    // index — Admin يرى الكل، Patient يرى وصفاته فقط
-    // =========================================================================
 
     public function index()
     {
-        $role = Auth::currentUser()['role'];
+
+
+        Auth::requireRole('admin', 'patient');
+
+        $role = Auth::role();
 
         if ($role === 'admin') {
 
             $prescriptions = $this->prescriptionModel->getAll();
 
-        } elseif ($role === 'patient') {
+        } else {
 
             $prescriptions = $this->prescriptionModel
                 ->getByPatient(Auth::userId());
-
-        } else {
-
-            redirect('index.php?page=403');
         }
 
         require 'views/prescriptions/index.php';
     }
 
-    // =========================================================================
-    // create — فتح نموذج إضافة الوصفة (GET)
-    // =========================================================================
 
     public function create()
     {
@@ -51,12 +45,12 @@ class PrescriptionController
         $appointment = $this->appointmentModel->findById($appointmentId);
         $doctor = $this->doctorModel->findByUserId(Auth::userId());
 
-        // التحقق من الملكية
+
         if (!$appointment || !$doctor || $appointment['doctor_id'] != $doctor['id']) {
             redirect('index.php?page=403');
         }
 
-        // يجب أن يكون الموعد مكتملاً
+
         if ($appointment['status'] !== 'completed') {
             $_SESSION['flash'] = [
                 'type' => 'danger',
@@ -65,7 +59,7 @@ class PrescriptionController
             redirect('index.php?page=doctor_dashboard');
         }
 
-        // لا يمكن إضافة وصفتين لنفس الموعد
+
         if ($this->prescriptionModel->existsForAppointment($appointmentId)) {
             $_SESSION['flash'] = [
                 'type' => 'danger',
@@ -77,15 +71,12 @@ class PrescriptionController
         require 'views/prescriptions/create.php';
     }
 
-    // =========================================================================
-    // store — حفظ الوصفة مع رفع ملف PDF اختياري (POST)
-    // =========================================================================
 
     public function store()
     {
         Auth::requireRole('doctor');
 
-        // ── CSRF ──────────────────────────────────────────────────────────────
+
         if (!CSRF::validateToken($_POST['csrf_token'] ?? '')) {
             $_SESSION['flash'] = ['type' => 'danger', 'message' => 'Invalid security token.'];
             redirect('index.php?page=doctor_dashboard');
@@ -95,7 +86,7 @@ class PrescriptionController
         $appointment = $this->appointmentModel->findById($appointmentId);
         $doctor = $this->doctorModel->findByUserId(Auth::userId());
 
-        // ── إعادة التحقق من الملكية على POST أيضاً ───────────────────────────
+
         if (!$appointment || !$doctor || $appointment['doctor_id'] != $doctor['id']) {
             redirect('index.php?page=403');
         }
@@ -109,31 +100,33 @@ class PrescriptionController
             redirect('index.php?page=doctor_dashboard');
         }
 
-        // ── التحقق من الحقول الإلزامية ────────────────────────────────────────
+
         $diagnosis = trim($_POST['diagnosis'] ?? '');
         $medications = trim($_POST['medications'] ?? '');
         $notes = trim($_POST['notes'] ?? '');
+        $patientCondition = trim($_POST['patient_condition'] ?? '');
 
         if (empty($diagnosis) || empty($medications)) {
             $_SESSION['flash'] = ['type' => 'danger', 'message' => 'Diagnosis and medications are required.'];
             redirect('index.php?page=create_prescription&appointment_id=' . $appointmentId);
         }
 
-        // ── رفع ملف PDF (اختياري) ─────────────────────────────────────────────
+
         $filePath = null;
 
         if (isset($_FILES['prescription_file']) && $_FILES['prescription_file']['error'] === UPLOAD_ERR_OK) {
             $filePath = $this->uploadPrescriptionFile($_FILES['prescription_file'], $appointmentId);
 
-            // إذا فشل الرفع، $filePath يحمل رسالة خطأ بدل مسار
+
             if ($filePath === false) {
                 redirect('index.php?page=create_prescription&appointment_id=' . $appointmentId);
             }
         }
 
-        // ── حفظ في قاعدة البيانات ─────────────────────────────────────────────
+
         $this->prescriptionModel->create([
             'appointment_id' => $appointmentId,
+            'patient_condition' => $patientCondition,
             'diagnosis' => $diagnosis,
             'medications' => $medications,
             'notes' => $notes,
@@ -144,9 +137,6 @@ class PrescriptionController
         redirect('index.php?page=doctor_dashboard');
     }
 
-    // =========================================================================
-    // download — تحميل PDF مع التحقق من الملكية
-    // =========================================================================
 
     public function download()
     {
@@ -167,7 +157,7 @@ class PrescriptionController
             redirect('index.php?page=404');
         }
 
-        // ── التحقق من الملكية حسب الدور ──────────────────────────────────────
+
         $role = Auth::role();
         $userId = Auth::userId();
 
@@ -182,7 +172,7 @@ class PrescriptionController
             }
         }
 
-        // ── التحقق من وجود الملف ──────────────────────────────────────────────
+
         if (empty($prescription['file_path'])) {
             $_SESSION['flash'] = ['type' => 'warning', 'message' => 'No PDF file attached to this prescription.'];
             redirect('index.php?page=prescriptions');
@@ -195,7 +185,7 @@ class PrescriptionController
             redirect('index.php?page=prescriptions');
         }
 
-        // ── إرسال الملف للمستخدم ──────────────────────────────────────────────
+
         header('Content-Type: application/pdf');
         header('Content-Disposition: attachment; filename="prescription.pdf"');
         header('Content-Length: ' . filesize($fullPath));
@@ -205,13 +195,11 @@ class PrescriptionController
         exit;
     }
 
-    // =========================================================================
-    // uploadPrescriptionFile — دالة خاصة لرفع ملف PDF والتحقق منه
-    // =========================================================================
 
     private function uploadPrescriptionFile(array $file, int $appointmentId)
     {
-        // ── 1. حجم الملف ──────────────────────────────────────────────────────
+
+
         if ($file['size'] > MAX_PDF_SIZE) {
             $_SESSION['flash'] = [
                 'type' => 'danger',
@@ -220,7 +208,7 @@ class PrescriptionController
             return false;
         }
 
-        // ── 2. التحقق من نوع الملف بـ finfo (ليس الامتداد فقط) ───────────────
+
         $finfo = new finfo(FILEINFO_MIME_TYPE);
         $mimeType = $finfo->file($file['tmp_name']);
 
@@ -232,18 +220,18 @@ class PrescriptionController
             return false;
         }
 
-        // ── 3. إنشاء مجلد الرفع إذا لم يكن موجوداً ───────────────────────────
+
         $uploadDir = UPLOAD_PATH . 'prescriptions/';
 
         if (!is_dir($uploadDir)) {
             mkdir($uploadDir, 0755, true);
         }
 
-        // ── 4. اسم الملف الآمن ────────────────────────────────────────────────
+
         $filename = 'prescription_' . $appointmentId . '_' . time() . '.pdf';
         $destPath = $uploadDir . $filename;
 
-        // ── 5. نقل الملف من المؤقت ────────────────────────────────────────────
+
         if (!move_uploaded_file($file['tmp_name'], $destPath)) {
             $_SESSION['flash'] = [
                 'type' => 'danger',

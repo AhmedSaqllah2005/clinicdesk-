@@ -8,7 +8,7 @@
             </a>
         </li>
         <li class="nav-item d-none d-sm-inline-block">
-            <a href="index.php?page=dashboard" class="nav-link">Home</a>
+            <a href="index.php?page=<?= Auth::role() === 'doctor' ? 'doctor_dashboard' : 'dashboard' ?>" class="nav-link">Home</a>
         </li>
         <li class="nav-item d-none d-sm-inline-block">
             <a href="#" class="nav-link"><?= date('l, d M Y') ?></a>
@@ -24,13 +24,16 @@
                 <span class="badge badge-primary ml-1"><?= ucfirst(Auth::role()) ?></span>
             </a>
             <div class="dropdown-menu dropdown-menu-right">
-                <form action="index.php?page=logout" method="POST" style="display: inline;">
-                    <input type="hidden" name="csrf_token" value="<?= CSRF::generateToken() ?>">
-                    <button type="submit" class="dropdown-item text-danger">
-                        <i class="fas fa-sign-out-alt mr-2"></i> Logout
-                    </button>
-                </form>
+                <a href="#" class="dropdown-item text-danger"
+                    onclick="event.preventDefault(); event.stopPropagation(); if(confirm('Are you sure you want to logout?')){ document.getElementById('navbar-logout-form').submit(); }">
+                    <i class="fas fa-sign-out-alt mr-2"></i> Logout
+                </a>
             </div>
+
+            <!-- [FIX-1] إضافة csrf_token للـ logout form — كان ناقصاً فكانت عملية الـ logout تفشل -->
+            <form id="navbar-logout-form" action="index.php?page=logout" method="POST" style="display:none;">
+                <input type="hidden" name="csrf_token" value="<?= CSRF::generateToken() ?>">
+            </form>
         </li>
     </ul>
 </nav>

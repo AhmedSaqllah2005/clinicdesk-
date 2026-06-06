@@ -4,14 +4,12 @@ require_once 'BaseModel.php';
 
 class PrescriptionModel extends BaseModel
 {
-    // =========================================================================
-    // Get All Prescriptions
-    // =========================================================================
+
 
     public function getAll()
     {
         $sql = "
-            SELECT 
+            SELECT
                 p.*,
                 a.appt_date,
 
@@ -40,9 +38,6 @@ class PrescriptionModel extends BaseModel
         return $result->fetch_all(MYSQLI_ASSOC);
     }
 
-    // =========================================================================
-    // Get Prescriptions By Patient
-    // =========================================================================
 
     public function getByPatient($patientId)
     {
@@ -50,6 +45,7 @@ class PrescriptionModel extends BaseModel
             SELECT
                 p.*,
                 a.appt_date,
+                a.appt_time,
 
                 doctor.name AS doctor_name,
                 patient.name AS patient_name
@@ -82,9 +78,6 @@ class PrescriptionModel extends BaseModel
         return [];
     }
 
-    // =========================================================================
-    // Create Prescription
-    // =========================================================================
 
     public function create($data)
     {
@@ -92,18 +85,20 @@ class PrescriptionModel extends BaseModel
             INSERT INTO prescriptions
             (
                 appointment_id,
+                patient_condition,
                 diagnosis,
                 medications,
                 notes,
                 file_path
             )
 
-            VALUES (?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?)
         ";
 
-        return $this->execute($sql, 'issss', [
+        return $this->execute($sql, 'isssss', [
 
             $data['appointment_id'],
+            $data['patient_condition'] ?? null,
             $data['diagnosis'],
             $data['medications'],
             $data['notes'] ?? '',
@@ -111,9 +106,6 @@ class PrescriptionModel extends BaseModel
         ]);
     }
 
-    // =========================================================================
-    // Get Prescription By Appointment
-    // =========================================================================
 
     public function getByAppointment($appointmentId)
     {
@@ -128,9 +120,6 @@ class PrescriptionModel extends BaseModel
         return $result->fetch_assoc();
     }
 
-    // =========================================================================
-    // Check If Prescription Exists
-    // =========================================================================
 
     public function existsForAppointment($appointmentId)
     {

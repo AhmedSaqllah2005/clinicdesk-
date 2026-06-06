@@ -18,9 +18,10 @@ class UserController
 
         $page = (int) ($_GET['p'] ?? 1);
         $role = $_GET['role'] ?? '';
+        $search = trim($_GET['search'] ?? '');
 
-        $users = $this->userModel->getAllPaginated($page, $role);
-        $totalUsers = $this->userModel->countAll($role);
+        $users = $this->userModel->getAllPaginated($page, $role, $search);
+        $totalUsers = $this->userModel->countAll($role, $search);
         $paginator = new Paginator($totalUsers, ITEMS_PER_PAGE, $page);
 
         require 'views/users/index.php';
@@ -36,31 +37,54 @@ class UserController
         }
 
         $data = [
-            'name' => trim($_POST['name']),
-            'email' => trim($_POST['email']),
+            'name'     => trim($_POST['name']),
+            'email'    => trim($_POST['email']),
             'password' => $_POST['password'],
-            'role' => $_POST['role'],
-            'phone' => trim($_POST['phone'] ?? '')
+            'role'     => $_POST['role'],
+            'phone'    => trim($_POST['phone'] ?? '')
         ];
+
+
+        if (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
+            $_SESSION['flash'] = ['type' => 'danger', 'message' => 'Invalid email format'];
+            redirect('index.php?page=users');
+        }
+
+
+        if (strlen($data['password']) < 8) {
+            $_SESSION['flash'] = ['type' => 'danger', 'message' => 'Password must be at least 8 characters'];
+            redirect('index.php?page=users');
+        }
 
         if ($this->userModel->findByEmail($data['email'])) {
             $_SESSION['flash'] = ['type' => 'danger', 'message' => 'Email already exists'];
             redirect('index.php?page=users');
         }
 
-        $userId = $this->userModel->create($data);
+        $db = Database::getInstance();
+        $db->beginTransaction();
 
-        if ($data['role'] == 'doctor') {
-            $availableDays = isset($_POST['available_days']) ? implode(',', $_POST['available_days']) : 'Sun,Mon,Tue,Wed,Thu';
-            $doctorData = [
-                'user_id' => $userId,
-                'specialization_id' => (int) $_POST['specialization_id'],
-                'consultation_fee' => (float) $_POST['consultation_fee'],
-                'available_days' => $availableDays,
-                'bio' => trim($_POST['bio'] ?? ''),
-                
-            ];
-            $this->doctorModel->create($doctorData);
+        try {
+            $userId = $this->userModel->create($data);
+
+            if ($data['role'] == 'doctor') {
+                $availableDays = isset($_POST['available_days']) ? implode(',', $_POST['available_days']) : 'Sun,Mon,Tue,Wed,Thu';
+                $doctorData = [
+                    'user_id'           => $userId,
+                    'specialization_id' => (int) $_POST['specialization_id'],
+                    'consultation_fee'  => (float) $_POST['consultation_fee'],
+                    'available_days'    => $availableDays,
+                    'bio'               => trim($_POST['bio'] ?? ''),
+                    'years_experience'  => (int) ($_POST['years_experience'] ?? 0),
+                ];
+                $this->doctorModel->create($doctorData);
+            }
+
+            $db->commit();
+        } catch (Exception $e) {
+            $db->rollback();
+            $_SESSION['flash'] = ['type' => 'danger', 'message' => $e->getMessage()];
+            redirect('index.php?page=users');
         }
 
         $_SESSION['flash'] = ['type' => 'success', 'message' => 'User created successfully'];
@@ -105,9 +129,16 @@ class UserController
         $id = (int) $_POST['id'];
         $role = $_POST['role'];
 
+
+        $email = trim($_POST['email']);
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $_SESSION['flash'] = ['type' => 'danger', 'message' => 'Invalid email format'];
+            redirect('index.php?page=edit_user&id=' . $id);
+        }
+
         $userData = [
-            'name' => trim($_POST['name']),
-            'email' => trim($_POST['email']),
+            'name'  => trim($_POST['name']),
+            'email' => $email,
             'phone' => trim($_POST['phone'] ?? '')
         ];
         $this->userModel->update($id, $userData);
@@ -118,9 +149,9 @@ class UserController
                 $availableDays = isset($_POST['available_days']) ? implode(',', $_POST['available_days']) : 'Sun,Mon,Tue,Wed,Thu';
                 $doctorData = [
                     'specialization_id' => (int) $_POST['specialization_id'],
-                    'consultation_fee' => (float) $_POST['consultation_fee'],
-                    'available_days' => $availableDays,
-                    'bio' => trim($_POST['bio'] ?? '')
+                    'consultation_fee'  => (float) $_POST['consultation_fee'],
+                    'available_days'    => $availableDays,
+                    'bio'               => trim($_POST['bio'] ?? '')
                 ];
                 $this->doctorModel->update($doctor['id'], $doctorData);
             }
@@ -156,28 +187,29 @@ class UserController
         $_SESSION['flash'] = ['type' => 'success', 'message' => 'User deleted successfully'];
         redirect('index.php?page=users');
     }
+
     public function toggleActive()
-{
-    Auth::requireRole('admin');
+    {
+        Auth::requireRole('admin');
 
-    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            redirect('index.php?page=users');
+        }
+
+        if (!CSRF::validateToken($_POST['csrf_token'] ?? '')) {
+            $_SESSION['flash'] = ['type' => 'danger', 'message' => 'Invalid CSRF token'];
+            redirect('index.php?page=users');
+        }
+
+        $id = (int) ($_POST['id'] ?? 0);
+
+        if ($id == Auth::userId()) {
+            $_SESSION['flash'] = ['type' => 'danger', 'message' => 'You cannot deactivate your own account'];
+            redirect('index.php?page=users');
+        }
+
+        $this->userModel->toggleActive($id);
+        $_SESSION['flash'] = ['type' => 'success', 'message' => 'User status updated successfully'];
         redirect('index.php?page=users');
     }
-
-    if (!CSRF::validateToken($_POST['csrf_token'] ?? '')) {
-        $_SESSION['flash'] = ['type' => 'danger', 'message' => 'Invalid CSRF token'];
-        redirect('index.php?page=users');
-    }
-
-    $id = (int) ($_POST['id'] ?? 0);
-
-    if ($id == Auth::userId()) {
-        $_SESSION['flash'] = ['type' => 'danger', 'message' => 'You cannot deactivate your own account'];
-        redirect('index.php?page=users');
-    }
-
-    $this->userModel->toggleActive($id);
-    $_SESSION['flash'] = ['type' => 'success', 'message' => 'User status updated successfully'];
-    redirect('index.php?page=users');
-}
 }

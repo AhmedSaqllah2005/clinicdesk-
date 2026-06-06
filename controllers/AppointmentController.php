@@ -5,17 +5,16 @@ class AppointmentController
     private $appointmentModel;
     private $userModel;
     private $doctorModel;
+    private $prescriptionModel;
 
     public function __construct()
     {
-        $this->appointmentModel = new AppointmentModel();
-        $this->userModel = new UserModel();
-        $this->doctorModel = new DoctorModel();
+        $this->appointmentModel  = new AppointmentModel();
+        $this->userModel         = new UserModel();
+        $this->doctorModel       = new DoctorModel();
+        $this->prescriptionModel = new PrescriptionModel();
     }
 
-    // =========================================================================
-    // index — Admin: قائمة كل المواعيد مع فلتر
-    // =========================================================================
 
     public function index()
     {
@@ -23,7 +22,7 @@ class AppointmentController
 
         $page = max(1, (int) ($_GET['p'] ?? 1));
 
-        // لما يجي من "Today's Appointments" في الداشبورد
+
         $todayFilter = ($_GET['filter'] ?? '') === 'today';
 
         $filters = [
@@ -35,18 +34,15 @@ class AppointmentController
         ];
 
         $appointments = $this->appointmentModel->getAll($page, $filters);
-        $totalItems = $this->appointmentModel->countFiltered('admin', 0, $filters);
-        $paginator = new Paginator($totalItems, ITEMS_PER_PAGE, $page);
+        $totalItems   = $this->appointmentModel->countFiltered('admin', 0, $filters);
+        $paginator    = new Paginator($totalItems, ITEMS_PER_PAGE, $page);
 
         $patients = $this->userModel->getPatients();
-        $doctors = $this->doctorModel->getAll();
+        $doctors  = $this->doctorModel->getAll();
 
         require 'views/appointments/index.php';
     }
 
-    // =========================================================================
-    // book — Patient: عرض نموذج الحجز (GET)
-    // =========================================================================
 
     public function book()
     {
@@ -54,89 +50,93 @@ class AppointmentController
 
         $doctors = $this->doctorModel->getAll();
 
+
+        $old = $_SESSION['old'] ?? [];
+        unset($_SESSION['old']);
+
         require 'views/appointments/book.php';
     }
 
-    // =========================================================================
-    // store — Patient: حفظ الموعد (POST) ← هنا التحقق الكامل
-    // =========================================================================
 
     public function store()
     {
         Auth::requireRole('patient', 'admin');
 
-        // ── CSRF ──────────────────────────────────────────────────────────────
+
         if (!CSRF::validateToken($_POST['csrf_token'] ?? '')) {
             $_SESSION['flash'] = ['type' => 'danger', 'message' => 'Invalid security token.'];
             redirect('index.php?page=appointments');
         }
 
-        $user = Auth::currentUser();
+        $user      = Auth::currentUser();
         $patientId = ($user['role'] === 'admin')
             ? (int) ($_POST['patient_id'] ?? 0)
             : Auth::userId();
         $doctorId = (int) ($_POST['doctor_id'] ?? 0);
-        $date = trim($_POST['appt_date'] ?? '');
-        $time = trim($_POST['appt_time'] ?? '');
-        $reason = trim($_POST['reason'] ?? '');
+        $date     = trim($_POST['appt_date'] ?? '');
+        $time     = trim($_POST['appt_time'] ?? '');
+        $reason   = trim($_POST['reason'] ?? '');
 
-        // ── 1. حقول إلزامية ───────────────────────────────────────────────────
-        if (!$doctorId || !$date || !$time || !$reason) {
-            $_SESSION['flash'] = ['type' => 'danger', 'message' => 'All fields are required.'];
+
+        $redirectWithOld = function (string $message) use ($patientId, $doctorId, $time, $reason) {
+            $_SESSION['flash'] = ['type' => 'danger', 'message' => $message];
+
+
+            $_SESSION['old'] = [
+                'patient_id' => $patientId,
+                'doctor_id'  => $doctorId,
+                'appt_time'  => $time,
+                'reason'     => $reason,
+            ];
             redirect('index.php?page=appointments&action=book');
+        };
+
+
+        if (!$doctorId || !$date || !$time || !$reason) {
+            $redirectWithOld('All fields are required.');
         }
 
         if ($user['role'] === 'admin' && !$patientId) {
-            $_SESSION['flash'] = ['type' => 'danger', 'message' => 'Please select a patient.'];
-            redirect('index.php?page=appointments&action=book');
+            $redirectWithOld('Please select a patient.');
         }
 
-        // ── 2. التاريخ يجب ألا يكون في الماضي ───────────────────────────────
+
         if ($date < date('Y-m-d')) {
-            $_SESSION['flash'] = ['type' => 'danger', 'message' => 'Appointment date cannot be in the past.'];
-            redirect('index.php?page=appointments&action=book');
+            $redirectWithOld('Appointment date cannot be in the past.');
         }
 
-        // ── 3. التحقق من أن اليوم ضمن أيام عمل الطبيب ───────────────────────
+
         $availableDays = $this->doctorModel->getAvailableDays($doctorId);
-        $dayOfWeek = date('D', strtotime($date)); // مثلاً: Mon, Tue, Sun
+        $dayOfWeek     = date('D', strtotime($date));
 
         if (!in_array($dayOfWeek, $availableDays)) {
             $daysStr = implode(', ', $availableDays);
-            $_SESSION['flash'] = [
-                'type' => 'danger',
-                'message' => "This doctor is not available on " . date('l', strtotime($date))
-                    . ". Available days: {$daysStr}."
-            ];
-            redirect('index.php?page=appointments&action=book');
+            $redirectWithOld(
+                "This doctor is not available on " . date('l', strtotime($date))
+                . ". Available days: {$daysStr}."
+            );
         }
 
-        // ── 4. فحص التعارض (نفس الطبيب + نفس التاريخ + نفس الوقت) ──────────
+
         if ($this->appointmentModel->hasConflict($doctorId, $date, $time)) {
-            $_SESSION['flash'] = [
-                'type' => 'danger',
-                'message' => 'This time slot is already booked. Please choose another time.'
-            ];
-            redirect('index.php?page=appointments&action=book');
+            $redirectWithOld('This time slot is already booked. Please choose another time.');
         }
 
-        // ── 5. حفظ الموعد ────────────────────────────────────────────────────
+
         $this->appointmentModel->book([
             'patient_id' => $patientId,
-            'doctor_id' => $doctorId,
-            'appt_date' => $date,
-            'appt_time' => $time,
-            'reason' => $reason,
+            'doctor_id'  => $doctorId,
+            'appt_date'  => $date,
+            'appt_time'  => $time,
+            'reason'     => $reason,
         ]);
 
+        unset($_SESSION['old']);
         $_SESSION['flash'] = ['type' => 'success', 'message' => 'Appointment booked successfully!'];
         $redirect = ($user['role'] === 'admin') ? 'index.php?page=appointments' : 'index.php?page=my_appointments';
         redirect($redirect);
     }
 
-    // =========================================================================
-    // updateStatus — Doctor/Admin: تغيير حالة الموعد
-    // =========================================================================
 
     public function updateStatus()
     {
@@ -151,9 +151,9 @@ class AppointmentController
             redirect('index.php?page=dashboard');
         }
 
-        $id = (int) ($_POST['appointment_id'] ?? 0);
+        $id     = (int) ($_POST['appointment_id'] ?? 0);
         $status = $_POST['status'] ?? '';
-        $notes = trim($_POST['doctor_notes'] ?? '');
+        $notes  = trim($_POST['doctor_notes'] ?? '');
 
         $allowed = ['pending', 'confirmed', 'completed', 'cancelled'];
         if (!in_array($status, $allowed)) {
@@ -161,12 +161,16 @@ class AppointmentController
             redirect('index.php?page=dashboard');
         }
 
-        // ── Doctor: يتحقق أن الموعد له ───────────────────────────────────────
+        $appointment = $this->appointmentModel->findById($id);
+        if (!$appointment) {
+            $_SESSION['flash'] = ['type' => 'danger', 'message' => 'Appointment not found.'];
+            redirect('index.php?page=dashboard');
+        }
+
         if ($user['role'] === 'doctor') {
-            $appointment = $this->appointmentModel->findById($id);
             $doctor = $this->doctorModel->findByUserId($user['id']);
 
-            if (!$appointment || !$doctor || $appointment['doctor_id'] != $doctor['id']) {
+            if (!$doctor || $appointment['doctor_id'] != $doctor['id']) {
                 redirect('index.php?page=403');
             }
         }
@@ -182,28 +186,34 @@ class AppointmentController
         }
     }
 
-    // =========================================================================
-    // myAppointments — Patient: مواعيده الخاصة
-    // =========================================================================
 
     public function myAppointments()
     {
         Auth::requireRole('patient');
 
-        $page = max(1, (int) ($_GET['p'] ?? 1));
+        $page    = max(1, (int) ($_GET['p'] ?? 1));
         $filters = ['status' => $_GET['status'] ?? ''];
 
         $userId = Auth::userId();
-        $appointments = $this->appointmentModel->getByPatient($userId, ITEMS_PER_PAGE, ($page - 1) * ITEMS_PER_PAGE);
-        $totalItems = $this->appointmentModel->countFiltered('patient', $userId, $filters);
-        $paginator = new Paginator($totalItems, ITEMS_PER_PAGE, $page);
 
-       require 'views/appointments/index.php';
+        $appointments = $this->appointmentModel->getByPatientFiltered($userId, $page, $filters);
+        $totalItems   = $this->appointmentModel->countFiltered('patient', $userId, $filters);
+        $paginator    = new Paginator($totalItems, ITEMS_PER_PAGE, $page);
+
+        $doctors = [];
+
+        $prescriptionAppointmentIds = [];
+        foreach ($appointments as $appt) {
+            if ($appt['status'] === 'completed') {
+                if ($this->prescriptionModel->existsForAppointment($appt['id'])) {
+                    $prescriptionAppointmentIds[] = $appt['id'];
+                }
+            }
+        }
+
+        require 'views/appointments/index.php';
     }
 
-    // =========================================================================
-    // cancel — Patient: إلغاء موعد pending
-    // =========================================================================
 
     public function cancel()
     {
@@ -214,15 +224,13 @@ class AppointmentController
             redirect('index.php?page=my_appointments');
         }
 
-        $id = (int) ($_POST['appointment_id'] ?? 0);
+        $id          = (int) ($_POST['appointment_id'] ?? 0);
         $appointment = $this->appointmentModel->findById($id);
 
-        // التحقق من الملكية
         if (!$appointment || $appointment['patient_id'] != Auth::userId()) {
             redirect('index.php?page=403');
         }
 
-        // فقط pending يمكن إلغاؤه
         if ($appointment['status'] !== 'pending') {
             $_SESSION['flash'] = ['type' => 'danger', 'message' => 'Only pending appointments can be cancelled.'];
             redirect('index.php?page=my_appointments');
@@ -234,9 +242,6 @@ class AppointmentController
         redirect('index.php?page=my_appointments');
     }
 
-    // =========================================================================
-    // delete — Admin: حذف موعد
-    // =========================================================================
 
     public function delete()
     {
@@ -264,21 +269,18 @@ class AppointmentController
         redirect('index.php?page=appointments');
     }
 
-    // =========================================================================
-    // exportCSV — Admin: تصدير المواعيد
-    // =========================================================================
 
     public function exportCSV()
     {
         Auth::requireRole('admin');
 
-        $appointments = $this->appointmentModel->getAll(1, []);
+        $appointments = $this->appointmentModel->getAllForExport([]);
 
         header('Content-Type: text/csv; charset=UTF-8');
         header('Content-Disposition: attachment; filename="appointments_' . date('Y-m-d') . '.csv"');
 
         $output = fopen('php://output', 'w');
-        fprintf($output, chr(0xEF) . chr(0xBB) . chr(0xBF)); // UTF-8 BOM
+        fprintf($output, chr(0xEF) . chr(0xBB) . chr(0xBF));
 
         fputcsv($output, ['ID', 'Patient', 'Doctor', 'Date', 'Time', 'Status', 'Reason']);
 

@@ -21,7 +21,7 @@ require_once 'views/partials/sidebar.php';
             </div>
         </div>
     </div>
-    
+
     <section class="content">
         <div class="container-fluid">
             <?php require_once 'views/partials/alerts.php'; ?>
@@ -34,7 +34,7 @@ require_once 'views/partials/sidebar.php';
                     </h3>
                 </div>
 
-                <form action="index.php?page=store_doctor" method="POST">
+                <form action="index.php?page=store_doctor" method="POST" enctype="multipart/form-data">
 
                     <div class="card-body">
 
@@ -67,7 +67,7 @@ require_once 'views/partials/sidebar.php';
 
                                     <label>Password</label>
 
-                                    <input type="password" name="password" class="form-control" required>
+                                    <input type="password" name="password" class="form-control" required minlength="6" placeholder="Min 6 characters">
 
                                 </div>
                             </div>
@@ -124,8 +124,17 @@ require_once 'views/partials/sidebar.php';
 
                         </div>
 
-                        <div class="form-group">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Doctor Profile Photo <small class="text-muted">(JPEG/PNG, max 1MB — optional)</small></label>
+                                    <input type="file" name="doctor_photo" class="form-control-file"
+                                           accept="image/jpeg,image/png">
+                                </div>
+                            </div>
+                        </div>
 
+                        <div class="form-group">
                             <label>Available Days</label>
 
                             <div>
@@ -172,6 +181,27 @@ require_once 'views/partials/sidebar.php';
 
             </div>
             <div class="card">
+                <!-- Search Filter -->
+                <div class="card-header">
+                    <form action="index.php" method="GET" class="form-inline">
+                        <input type="hidden" name="page" value="doctors">
+                        <div class="input-group" style="max-width:520px;">
+                            <input type="text" name="search" class="form-control"
+                                   placeholder="Search by ID, Name, Email or Specialization..."
+                                   value="<?= htmlspecialchars($_GET['search'] ?? '', ENT_QUOTES) ?>">
+                            <div class="input-group-append">
+                                <button class="btn btn-primary" type="submit">
+                                    <i class="fas fa-search"></i> Search
+                                </button>
+                                <?php if (!empty($_GET['search'])): ?>
+                                    <a href="index.php?page=doctors" class="btn btn-secondary">
+                                        <i class="fas fa-times"></i> Clear
+                                    </a>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    </form>
+                </div>
                 <div class="card-body table-responsive p-0">
                     <table class="table table-hover table-striped">
                         <thead>
@@ -190,7 +220,7 @@ require_once 'views/partials/sidebar.php';
                             <?php foreach ($doctors as $doc): ?>
                                 <tr>
                                     <td><?= $doc['id'] ?></td>
-                                    <td>Dr. <?= sanitize($doc['name']) ?></td>
+                                    <td><?= sanitize($doc['name']) ?></td>
                                     <td><?= sanitize($doc['email']) ?></td>
                                     <td><?= sanitize($doc['specialization_name'] ?? '-') ?></td>
                                     <td><?= number_format($doc['consultation_fee'] ?? 0, 2) ?> USD</td>
@@ -214,6 +244,7 @@ require_once 'views/partials/sidebar.php';
                                         </a>
                                         <form action="index.php?page=delete_doctor" method="POST" style="display:inline"
                                             onsubmit="return confirm('Delete Dr. <?= sanitize($doc['name']) ?>?')">
+                                            <input type="hidden" name="csrf_token" value="<?= CSRF::generateToken() ?>">
                                             <input type="hidden" name="user_id" value="<?= $doc['user_id'] ?>">
                                             <button type="submit" class="btn btn-danger btn-sm">
                                                 <i class="fas fa-trash"></i> Delete
@@ -226,17 +257,27 @@ require_once 'views/partials/sidebar.php';
                     </table>
                 </div>
                 <div class="card-footer clearfix">
+                    <?php $searchParam = urlencode($_GET['search'] ?? ''); ?>
                     <ul class="pagination pagination-sm m-0 float-right">
+
                         <?php if ($paginator->hasPrev()): ?>
-                            <li class="page-item"><a class="page-link"
-                                    href="?page=doctors&p=<?= $paginator->getPrevPage() ?>">« Prev</a></li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page=doctors&p=<?= $paginator->getPrevPage() ?>&search=<?= $searchParam ?>">« Prev</a>
+                            </li>
                         <?php endif; ?>
-                        <li class="page-item active"><span class="page-link"><?= $paginator->currentPage() ?> /
-                                <?= $paginator->totalPages() ?></span></li>
+
+                        <?php for ($i = 1; $i <= $paginator->totalPages(); $i++): ?>
+                            <li class="page-item <?= $i === $paginator->currentPage() ? 'active' : '' ?>">
+                                <a class="page-link" href="?page=doctors&p=<?= $i ?>&search=<?= $searchParam ?>"><?= $i ?></a>
+                            </li>
+                        <?php endfor; ?>
+
                         <?php if ($paginator->hasNext()): ?>
-                            <li class="page-item"><a class="page-link"
-                                    href="?page=doctors&p=<?= $paginator->getNextPage() ?>">Next »</a></li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page=doctors&p=<?= $paginator->getNextPage() ?>&search=<?= $searchParam ?>">Next »</a>
+                            </li>
                         <?php endif; ?>
+
                     </ul>
                 </div>
             </div>

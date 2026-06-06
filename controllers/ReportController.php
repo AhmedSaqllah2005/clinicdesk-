@@ -7,7 +7,7 @@ class ReportController
     public function __construct()
     {
         $this->appointmentModel = new AppointmentModel();
-        $this->doctorModel = new DoctorModel();
+        $this->doctorModel      = new DoctorModel();
     }
 
     public function appointments()
@@ -15,26 +15,27 @@ class ReportController
         Auth::requireRole('admin');
 
         $filters = [
-            'doctor_id' => (int) ($_GET['doctor_id'] ?? 0),
-            'status' => $_GET['status'] ?? '',
+            'doctor_id'  => (int) ($_GET['doctor_id'] ?? 0),
+            'status'     => $_GET['status'] ?? '',
             'start_date' => $_GET['start_date'] ?? '',
-            'end_date' => $_GET['end_date'] ?? ''
+            'end_date'   => $_GET['end_date'] ?? ''
         ];
 
         if (!empty($filters['start_date']) && !empty($filters['end_date'])) {
             if ($filters['start_date'] > $filters['end_date']) {
                 $_SESSION['flash'] = ['type' => 'danger', 'message' => 'Start date must be before end date'];
                 $filters['start_date'] = '';
-                $filters['end_date'] = '';
+                $filters['end_date']   = '';
             }
         }
 
-        $appointments = $this->appointmentModel->getAll(1, $filters);
-        $doctors = $this->doctorModel->getAll();
+
+        $appointments = $this->appointmentModel->getAllForExport($filters);
+        $doctors      = $this->doctorModel->getAll();
 
         $summary = [
-            'total' => count($appointments),
-            'pending' => 0,
+            'total'     => count($appointments),
+            'pending'   => 0,
             'confirmed' => 0,
             'completed' => 0,
             'cancelled' => 0
@@ -44,7 +45,7 @@ class ReportController
             $summary[$app['status']]++;
         }
 
-        require 'views/reports/appointments.php';
+        require 'views/reports/index.php';
     }
 
     public function exportCSV()
@@ -56,10 +57,10 @@ class ReportController
         Auth::requireRole('admin');
 
         $filters = [
-            'doctor_id' => (int) ($_GET['doctor_id'] ?? 0),
-            'status' => $_GET['status'] ?? '',
+            'doctor_id'  => (int) ($_GET['doctor_id'] ?? 0),
+            'status'     => $_GET['status'] ?? '',
             'start_date' => $_GET['start_date'] ?? '',
-            'end_date' => $_GET['end_date'] ?? ''
+            'end_date'   => $_GET['end_date'] ?? ''
         ];
 
         $appointments = $this->appointmentModel->getAllForExport($filters);
@@ -69,10 +70,10 @@ class ReportController
 
         $output = fopen('php://output', 'w');
 
-        // UTF-8 BOM
+
         fprintf($output, chr(0xEF) . chr(0xBB) . chr(0xBF));
 
-        // رؤوس الأعمدة
+
         fputcsv($output, [
             'ID',
             'Patient',
@@ -84,7 +85,7 @@ class ReportController
             'Reason'
         ], ';');
 
-        // البيانات
+
         foreach ($appointments as $app) {
 
             fputcsv($output, [

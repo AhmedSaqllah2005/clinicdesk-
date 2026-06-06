@@ -4,10 +4,8 @@ require_once 'BaseModel.php';
 
 class PatientModel extends BaseModel
 {
-    // =========================================================================
-    // findByUserId — البحث عن مريض بـ user_id
-    // =========================================================================
-    
+
+
     public function findByUserId($userId)
     {
        return $this->fetchOne("
@@ -17,36 +15,27 @@ class PatientModel extends BaseModel
             AND role = 'patient'
         ", "i", [$userId]);
     }
-    
-    // =========================================================================
-    // getAll — الحصول على جميع المرضى
-    // =========================================================================
-    
+
+
     public function getAll()
     {
-        $sql = "SELECT id, name, email, phone, created_at 
-                FROM users 
-                WHERE role = 'patient' 
+        $sql = "SELECT id, name, email, phone, created_at
+                FROM users
+                WHERE role = 'patient'
                 ORDER BY name ASC";
         $result = $this->execute($sql);
         return $result->fetch_all(MYSQLI_ASSOC);
     }
-    
-    // =========================================================================
-    // findById — البحث عن مريض بـ id
-    // =========================================================================
-    
+
+
     public function findById($id)
     {
         $sql = "SELECT * FROM users WHERE id = ? AND role = 'patient'";
         $result = $this->execute($sql, 'i', [$id]);
         return $result->fetch_assoc();
     }
-    
-    // =========================================================================
-    // countAll — عد جميع المرضى
-    // =========================================================================
-    
+
+
     public function countAll()
     {
         $sql = "SELECT COUNT(*) as total FROM users WHERE role = 'patient'";
@@ -54,64 +43,74 @@ class PatientModel extends BaseModel
         $row = $result->fetch_assoc();
         return $row['total'] ?? 0;
     }
-    
-    // =========================================================================
-    // getAllPaginated — الحصول على المرضى بترقيم صفحات
-    // =========================================================================
-    
+
+
     public function getAllPaginated($page = 1, $itemsPerPage = 10)
     {
         $offset = ($page - 1) * $itemsPerPage;
-        $sql = "SELECT id, name, email, phone, created_at 
-                FROM users 
-                WHERE role = 'patient' 
-                ORDER BY name ASC 
+        $sql = "SELECT id, name, email, phone, created_at
+                FROM users
+                WHERE role = 'patient'
+                ORDER BY name ASC
                 LIMIT ? OFFSET ?";
         $result = $this->execute($sql, 'ii', [$itemsPerPage, $offset]);
         return $result->fetch_all(MYSQLI_ASSOC);
     }
-    
-    // =========================================================================
-    // create — إضافة مريض جديد (من خلال جدول users)
-    // =========================================================================
-    
+
+
     public function create($name, $email, $password, $phone = '')
     {
-        $hashed = password_hash($password, PASSWORD_DEFAULT);
-        $sql = "INSERT INTO users (name, email, password, role, phone) 
+        $hashed = password_hash($password, PASSWORD_BCRYPT);
+        $sql = "INSERT INTO users (name, email, password, role, phone)
                 VALUES (?, ?, ?, 'patient', ?)";
         return $this->execute($sql, 'ssss', [$name, $email, $hashed, $phone]);
     }
-    
-    // =========================================================================
-    // update — تحديث بيانات المريض
-    // =========================================================================
-    
+
+
     public function update($id, $name, $email, $phone = '')
     {
-        $sql = "UPDATE users SET name = ?, email = ?, phone = ? 
+        $sql = "UPDATE users SET name = ?, email = ?, phone = ?
                 WHERE id = ? AND role = 'patient'";
         return $this->execute($sql, 'sssi', [$name, $email, $phone, $id]);
     }
-    
-    // =========================================================================
-    // delete — حذف مريض
-    // =========================================================================
-    
+
+
     public function delete($id)
     {
         $sql = "DELETE FROM users WHERE id = ? AND role = 'patient'";
         return $this->execute($sql, 'i', [$id]);
     }
-    
-    // =========================================================================
-    // toggleActive — تفعيل/تعطيل حساب المريض
-    // =========================================================================
-    
+
+
     public function toggleActive($id)
     {
-        $sql = "UPDATE users SET is_active = NOT is_active 
+        $sql = "UPDATE users SET is_active = NOT is_active
                 WHERE id = ? AND role = 'patient'";
         return $this->execute($sql, 'i', [$id]);
+    }
+
+
+    public function searchPatients($search = '')
+    {
+        $search = trim($search);
+
+        if ($search === '') {
+            return $this->getAll();
+        }
+
+        $sql = "SELECT id, name, email, phone, created_at
+                FROM users
+                WHERE role = 'patient'
+                AND (
+                    id          LIKE ?
+                    OR name     LIKE ?
+                    OR email    LIKE ?
+                    OR phone    LIKE ?
+                )
+                ORDER BY name ASC";
+
+        $like   = '%' . $search . '%';
+        $result = $this->execute($sql, 'ssss', [$like, $like, $like, $like]);
+        return $result->fetch_all(MYSQLI_ASSOC);
     }
 }

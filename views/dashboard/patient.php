@@ -146,7 +146,7 @@ require_once 'views/partials/sidebar.php';
 
                     <div class="card-tools">
 
-                        <a href="index.php?page=appointments" class="btn btn-sm btn-primary">
+                        <a href="index.php?page=my_appointments" class="btn btn-sm btn-primary">
 
                             View All
 

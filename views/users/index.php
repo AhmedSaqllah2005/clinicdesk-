@@ -230,12 +230,12 @@ require_once 'views/partials/sidebar.php';
                                                 <i class="fas fa-trash"></i>
                                             </button>
                                         </form>
-                    </div>
-                    </td>
-                    </tr>
-                <?php endforeach; ?>
-                </tbody>
-                </table>
+                </div>
+                </td>
+                </tr>
+            <?php endforeach; ?>
+            </tbody>
+            </table>
             </div>
             <div class="card-footer clearfix">
                 <ul class="pagination pagination-sm m-0 float-right">
@@ -259,7 +259,7 @@ require_once 'views/partials/sidebar.php';
 </div>
 
 <script>
-    document.getElementById('role_select').addEventListener('change', function () {
+    document.getElementById('role_select').addEventListener('change', function() {
         var doctorFields = document.getElementById('doctor_fields');
         if (this.value === 'doctor') {
             doctorFields.style.display = 'block';

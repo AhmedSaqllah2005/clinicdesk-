@@ -1,9 +1,5 @@
 <?php
 
-require_once 'models/UserModel.php';
-require_once 'models/PatientModel.php';
-require_once 'models/AppointmentModel.php';
-require_once 'models/PrescriptionModel.php';
 
 class PatientsController
 {
@@ -14,8 +10,8 @@ class PatientsController
 
     public function __construct()
     {
-        $this->userModel = new UserModel();
-        $this->patientModel = new PatientModel();
+        $this->userModel        = new UserModel();
+        $this->patientModel     = new PatientModel();
         $this->appointmentModel = new AppointmentModel();
         $this->prescriptionModel = new PrescriptionModel();
     }
@@ -24,7 +20,8 @@ class PatientsController
     {
         Auth::requireRole('admin');
 
-        $patients = $this->userModel->getPatients();
+        $search   = trim($_GET['search'] ?? '');
+        $patients = $this->patientModel->searchPatients($search);
         require 'views/patients/index.php';
     }
 
@@ -37,10 +34,22 @@ class PatientsController
             redirect('index.php?page=patients');
         }
 
-        $name = trim($_POST['name']);
-        $email = trim($_POST['email']);
+        $name     = trim($_POST['name']);
+        $email    = trim($_POST['email']);
         $password = $_POST['password'];
-        $phone = trim($_POST['phone'] ?? '');
+        $phone    = trim($_POST['phone'] ?? '');
+
+
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $_SESSION['flash'] = ['type' => 'danger', 'message' => 'Invalid email format'];
+            redirect('index.php?page=patients');
+        }
+
+
+        if (strlen($password) < 8) {
+            $_SESSION['flash'] = ['type' => 'danger', 'message' => 'Password must be at least 8 characters'];
+            redirect('index.php?page=patients');
+        }
 
         if ($this->userModel->findByEmail($email)) {
             $_SESSION['flash'] = ['type' => 'danger', 'message' => 'Email already exists'];
@@ -48,11 +57,11 @@ class PatientsController
         }
 
         $data = [
-            'name' => $name,
-            'email' => $email,
+            'name'     => $name,
+            'email'    => $email,
             'password' => $password,
-            'role' => 'patient',
-            'phone' => $phone
+            'role'     => 'patient',
+            'phone'    => $phone
         ];
 
         $this->userModel->create($data);
@@ -70,7 +79,7 @@ class PatientsController
         if ($id <= 0) {
 
             $_SESSION['flash'] = [
-                'type' => 'danger',
+                'type'    => 'danger',
                 'message' => 'Invalid patient ID'
             ];
 
@@ -82,7 +91,7 @@ class PatientsController
         if (!$patient || $patient['role'] !== 'patient') {
 
             $_SESSION['flash'] = [
-                'type' => 'danger',
+                'type'    => 'danger',
                 'message' => 'Patient not found'
             ];
 
@@ -103,9 +112,16 @@ class PatientsController
 
         $id = (int) $_POST['id'];
 
+
+        $email = trim($_POST['email']);
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $_SESSION['flash'] = ['type' => 'danger', 'message' => 'Invalid email format'];
+            redirect('index.php?page=patients');
+        }
+
         $userData = [
-            'name' => trim($_POST['name']),
-            'email' => trim($_POST['email']),
+            'name'  => trim($_POST['name']),
+            'email' => $email,
             'phone' => trim($_POST['phone'] ?? '')
         ];
 
@@ -150,7 +166,7 @@ class PatientsController
         require 'views/patients/profile.php';
     }
 
-    
+
     public function updateProfile()
     {
         Auth::requireRole('patient');
@@ -162,9 +178,16 @@ class PatientsController
 
         $userId = Auth::userId();
 
+
+        $email = trim($_POST['email']);
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $_SESSION['flash'] = ['type' => 'danger', 'message' => 'Invalid email format'];
+            redirect('index.php?page=patient_profile');
+        }
+
         $data = [
-            'name' => trim($_POST['name']),
-            'email' => trim($_POST['email']),
+            'name'  => trim($_POST['name']),
+            'email' => $email,
             'phone' => trim($_POST['phone'] ?? '')
         ];
 
@@ -174,6 +197,7 @@ class PatientsController
 
         redirect('index.php?page=patient_profile');
     }
+
     public function appointments()
     {
         Auth::requireRole('patient');

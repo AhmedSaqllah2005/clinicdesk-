@@ -8,9 +8,9 @@ class DoctorController
 
     public function __construct()
     {
-        $this->doctorModel = new DoctorModel();
-        $this->appointmentModel = new AppointmentModel();
-        $this->userModel = new UserModel();
+        $this->doctorModel        = new DoctorModel();
+        $this->appointmentModel   = new AppointmentModel();
+        $this->userModel          = new UserModel();
         $this->specializationModel = new SpecializationModel();
     }
 
@@ -18,13 +18,14 @@ class DoctorController
     {
         Auth::requireRole('admin');
 
-        $page = (int) ($_GET['p'] ?? 1);
+        $page   = (int) ($_GET['p'] ?? 1);
+        $search = trim($_GET['search'] ?? '');
 
-        $allDoctors = $this->doctorModel->getAll();
+        $allDoctors   = $this->doctorModel->searchDoctors($search);
         $totalDoctors = count($allDoctors);
-        $paginator = new Paginator($totalDoctors, ITEMS_PER_PAGE, $page);
+        $paginator    = new Paginator($totalDoctors, ITEMS_PER_PAGE, $page);
 
-        // Paginate manually
+
         $doctors = array_slice($allDoctors, $paginator->offset(), ITEMS_PER_PAGE);
 
         $specializations = $this->specializationModel->getAll();
@@ -40,13 +41,32 @@ class DoctorController
             die("Invalid Request");
         }
 
-        // Create user first
+
+        if (!CSRF::validateToken($_POST['csrf_token'] ?? '')) {
+            $_SESSION['flash'] = ['type' => 'danger', 'message' => 'Invalid CSRF token'];
+            redirect('index.php?page=doctors');
+        }
+
+
+        $email = trim($_POST['email']);
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $_SESSION['flash'] = ['type' => 'danger', 'message' => 'Invalid email format'];
+            redirect('index.php?page=doctors');
+        }
+
+
+        if (strlen($_POST['password']) < 6) {
+            $_SESSION['flash'] = ['type' => 'danger', 'message' => 'Password must be at least 6 characters'];
+            redirect('index.php?page=doctors');
+        }
+
+
         $userData = [
-            'name' => trim($_POST['name']),
-            'email' => trim($_POST['email']),
+            'name'     => trim($_POST['name']),
+            'email'    => $email,
             'password' => $_POST['password'],
-            'role' => 'doctor',
-            'phone' => trim($_POST['phone'] ?? '')
+            'role'     => 'doctor',
+            'phone'    => trim($_POST['phone'] ?? '')
         ];
 
         if ($this->userModel->findByEmail($userData['email'])) {
@@ -56,20 +76,51 @@ class DoctorController
 
         $userId = $this->userModel->create($userData);
 
-        // Create doctor record
-        $availableDays = isset($_POST['available_days']) ? implode(',', $_POST['available_days']) : 'Sun,Mon,Tue,Wed,Thu';
 
-        $doctorData = [
-            'user_id' => $userId,
-            'specialization_id' => (int) $_POST['specialization_id'],
-            'consultation_fee' => (float) $_POST['consultation_fee'],
-            'available_days' => $availableDays,
-            'bio' => trim($_POST['bio'] ?? ''),
-            'license_number' => 'LIC-' . time() . '-' . $userId,
-            'years_experience' => (int) ($_POST['years_experience'] ?? 0)
-        ];
+        $db = Database::getInstance();
+        $db->beginTransaction();
 
-        $this->doctorModel->create($doctorData);
+        try {
+
+
+            $availableDays = isset($_POST['available_days'])
+                ? implode(',', $_POST['available_days'])
+                : 'Sun,Mon,Tue,Wed,Thu';
+
+            $doctorData = [
+                'user_id'           => $userId,
+                'specialization_id' => (int) ($_POST['specialization_id'] ?? 0),
+                'consultation_fee'  => (float) ($_POST['consultation_fee'] ?? 0),
+                'available_days'    => $availableDays,
+                'bio'               => trim($_POST['bio'] ?? ''),
+                'years_experience'  => (int) ($_POST['years_experience'] ?? 0),
+            ];
+
+
+            if ($doctorData['specialization_id'] <= 0) {
+                throw new Exception('Please select a specialization.');
+            }
+
+            $this->doctorModel->create($doctorData);
+
+
+            if (isset($_FILES['doctor_photo']) && $_FILES['doctor_photo']['error'] === UPLOAD_ERR_OK) {
+                $photoName = $this->uploadDoctorPhoto($_FILES['doctor_photo'], $userId);
+                if ($photoName !== false && $photoName !== null) {
+                    $this->doctorModel->updatePhoto($this->doctorModel->getIdByUserId($userId), $photoName);
+                }
+            }
+
+            $db->commit();
+
+        } catch (Exception $e) {
+            $db->rollback();
+
+
+            $this->userModel->deleteUser($userId);
+            $_SESSION['flash'] = ['type' => 'danger', 'message' => $e->getMessage()];
+            redirect('index.php?page=doctors');
+        }
 
         $_SESSION['flash'] = ['type' => 'success', 'message' => 'Doctor added successfully'];
         redirect('index.php?page=doctors');
@@ -106,26 +157,49 @@ class DoctorController
 
         $userId = (int) $_POST['user_id'];
 
-        // Update user data
+
+        $email = trim($_POST['email']);
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $_SESSION['flash'] = ['type' => 'danger', 'message' => 'Invalid email format'];
+            redirect('index.php?page=doctors');
+        }
+
+
         $userData = [
-            'name' => trim($_POST['name']),
-            'email' => trim($_POST['email']),
+            'name'  => trim($_POST['name']),
+            'email' => $email,
             'phone' => trim($_POST['phone'] ?? '')
         ];
         $this->userModel->update($userId, $userData);
 
-        // Update doctor data
+
         $doctor = $this->doctorModel->findByUserId($userId);
         if ($doctor) {
             $availableDays = isset($_POST['available_days']) ? implode(',', $_POST['available_days']) : 'Sun,Mon,Tue,Wed,Thu';
 
             $doctorData = [
                 'specialization_id' => (int) $_POST['specialization_id'],
-                'consultation_fee' => (float) $_POST['consultation_fee'],
-                'available_days' => $availableDays,
-                'bio' => trim($_POST['bio'] ?? '')
+                'consultation_fee'  => (float) $_POST['consultation_fee'],
+                'available_days'    => $availableDays,
+                'bio'               => trim($_POST['bio'] ?? '')
             ];
             $this->doctorModel->update($doctor['id'], $doctorData);
+
+
+            if (isset($_FILES['doctor_photo']) && $_FILES['doctor_photo']['error'] === UPLOAD_ERR_OK) {
+                $photoName = $this->uploadDoctorPhoto($_FILES['doctor_photo'], $userId);
+                if ($photoName !== false && $photoName !== null) {
+
+
+                    if (!empty($doctor['photo'])) {
+                        $oldPath = UPLOAD_PATH . 'doctor_photos/' . $doctor['photo'];
+                        if (file_exists($oldPath)) {
+                            unlink($oldPath);
+                        }
+                    }
+                    $this->doctorModel->updatePhoto($doctor['id'], $photoName);
+                }
+            }
         }
 
         $_SESSION['flash'] = ['type' => 'success', 'message' => 'Doctor updated successfully'];
@@ -151,88 +225,149 @@ class DoctorController
     {
         Auth::requireRole('doctor');
 
-        $userId = Auth::userId();
-        $doctor = $this->doctorModel->findByUserId($userId);
+        $userId   = Auth::userId();
+        $doctor   = $this->doctorModel->findByUserId($userId);
 
         if (!$doctor) {
             die("Doctor profile not found");
         }
 
         $doctorId = $doctor['id'];
-        $page = (int) ($_GET['p'] ?? 1);
-        $filters = ['status' => $_GET['status'] ?? ''];
+        $page     = (int) ($_GET['p'] ?? 1);
+        $filters  = ['status' => $_GET['status'] ?? ''];
 
         $appointments = $this->appointmentModel->getByDoctor($doctorId, $page, $filters);
-        $totalItems = $this->appointmentModel->countFiltered('doctor', $doctorId, $filters);
-        $paginator = new Paginator($totalItems, ITEMS_PER_PAGE, $page);
+        $totalItems   = $this->appointmentModel->countFiltered('doctor', $doctorId, $filters);
+        $paginator    = new Paginator($totalItems, ITEMS_PER_PAGE, $page);
 
-        $db = Database::getInstance();
-        $result = $db->query("
-            SELECT a.*, p.name as patient_name 
-            FROM appointments a 
-            JOIN users p ON a.patient_id = p.id 
-            WHERE a.doctor_id = ? AND a.appt_date = CURDATE() 
-            ORDER BY a.appt_time ASC
-        ", 'i', [$doctorId]);
-        $todayAppointments = $result->fetch_all(MYSQLI_ASSOC);
+
+        $todayAppointments = $this->appointmentModel->getTodayAppointmentsByDoctor($doctorId);
 
         $todayCount = $this->appointmentModel->getTodayCount($doctorId);
-        $stats = $this->appointmentModel->getDashboardStats($doctorId);
-
-        $today = $todayCount;
-        $monthly = $stats['total'] ?? 0;
-        $pending = $stats['pending'] ?? 0;
-        $completed = $stats['completed'] ?? 0;
-        $upcoming = $todayAppointments;
-        $schedule = $appointments;
+        $stats      = $this->appointmentModel->getDashboardStats($doctorId);
 
         require 'views/dashboard/doctor.php';
     }
+
+    public function appointments()
+    {
+        Auth::requireRole('doctor');
+
+        $userId   = Auth::userId();
+        $doctor   = $this->doctorModel->findByUserId($userId);
+
+        if (!$doctor) {
+            die("Doctor profile not found");
+        }
+
+        $doctorId = $doctor['id'];
+        $page     = max(1, (int) ($_GET['p'] ?? 1));
+        $filters  = ['status' => $_GET['status'] ?? ''];
+
+        $appointments = $this->appointmentModel->getByDoctor($doctorId, $page, $filters);
+        $totalItems   = $this->appointmentModel->countFiltered('doctor', $doctorId, $filters);
+        $paginator    = new Paginator($totalItems, ITEMS_PER_PAGE, $page);
+
+        require 'views/appointments/doctor_appointments.php';
+    }
+
     public function profile()
     {
-    Auth::requireRole('doctor');
+        Auth::requireRole('doctor');
 
-    $userId = Auth::userId();
+        $userId = Auth::userId();
 
-    $user = $this->userModel->findById($userId);
+        $user   = $this->userModel->findById($userId);
 
-    $doctor = $this->doctorModel->findByUserId($userId);
+        $doctor = $this->doctorModel->findByUserId($userId);
 
-    require 'views/doctors/profile.php';
+        require 'views/doctors/profile.php';
     }
 
     public function updateProfile()
     {
-    Auth::requireRole('doctor');
+        Auth::requireRole('doctor');
 
-    if (!CSRF::validateToken($_POST['csrf_token'] ?? '')) {
+        if (!CSRF::validateToken($_POST['csrf_token'] ?? '')) {
+
+            $_SESSION['flash'] = [
+                'type'    => 'danger',
+                'message' => 'Invalid CSRF token'
+            ];
+
+            redirect('index.php?page=doctor_profile');
+        }
+
+        $userId = Auth::userId();
+
+
+        $email = trim($_POST['email']);
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $_SESSION['flash'] = [
+                'type'    => 'danger',
+                'message' => 'Invalid email format'
+            ];
+            redirect('index.php?page=doctor_profile');
+        }
+
+        $data = [
+
+            'name'  => trim($_POST['name']),
+            'email' => $email,
+            'phone' => trim($_POST['phone'])
+
+        ];
+
+        $this->userModel->update($userId, $data);
 
         $_SESSION['flash'] = [
-            'type' => 'danger',
-            'message' => 'Invalid CSRF token'
+            'type'    => 'success',
+            'message' => 'Profile updated successfully'
         ];
 
         redirect('index.php?page=doctor_profile');
     }
 
-    $userId = Auth::userId();
 
-    $data = [
+    private function uploadDoctorPhoto(array $file, int $userId): ?string
+    {
 
-        'name'  => trim($_POST['name']),
-        'email' => trim($_POST['email']),
-        'phone' => trim($_POST['phone'])
 
-    ];
+        if ($file['size'] > MAX_IMAGE_SIZE) {
+            $_SESSION['flash'] = ['type' => 'danger', 'message' => 'Photo too large. Maximum size is 1MB.'];
+            return false;
+        }
 
-    $this->userModel->update($userId, $data);
 
-    $_SESSION['flash'] = [
-        'type' => 'success',
-        'message' => 'Profile updated successfully'
-    ];
+        $imageInfo = @getimagesize($file['tmp_name']);
+        if ($imageInfo === false) {
+            $_SESSION['flash'] = ['type' => 'danger', 'message' => 'Invalid image file.'];
+            return false;
+        }
 
-    redirect('index.php?page=doctor_profile');
+        $allowedTypes = [IMAGETYPE_JPEG, IMAGETYPE_PNG];
+        if (!in_array($imageInfo[2], $allowedTypes)) {
+            $_SESSION['flash'] = ['type' => 'danger', 'message' => 'Only JPEG and PNG images are allowed.'];
+            return false;
+        }
+
+
+        $uploadDir = UPLOAD_PATH . 'doctor_photos/';
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0755, true);
+        }
+
+
+        $ext      = ($imageInfo[2] === IMAGETYPE_JPEG) ? 'jpg' : 'png';
+        $filename = 'doctor_' . $userId . '_' . time() . '.' . $ext;
+        $destPath = $uploadDir . $filename;
+
+
+        if (!move_uploaded_file($file['tmp_name'], $destPath)) {
+            $_SESSION['flash'] = ['type' => 'danger', 'message' => 'Failed to save photo. Please try again.'];
+            return false;
+        }
+
+        return $filename;
     }
-
 }

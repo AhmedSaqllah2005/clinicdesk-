@@ -1,27 +1,21 @@
-# ============================================================
-# ClinicDesk — .gitignore
-# ============================================================
-
-# بيانات الاتصال بقاعدة البيانات — لا ترفعها أبداً
+# DB credentials — never commit
 config/database.php
 
-# ملفات المستخدمين المرفوعة
+# Uploaded files — not part of source code
 public/uploads/avatars/*
 public/uploads/doctor_photos/*
 public/uploads/prescriptions/*
 
-# استثناء: احتفظ بملفات .htaccess وindex.php الواقية
-!public/uploads/avatars/.htaccess
-!public/uploads/avatars/index.php
-!public/uploads/doctor_photos/.htaccess
-!public/uploads/doctor_photos/index.php
+# Keep folder structure
+!public/uploads/avatars/.gitkeep
+!public/uploads/doctor_photos/.gitkeep
+!public/uploads/prescriptions/.gitkeep
 !public/uploads/prescriptions/.htaccess
-!public/uploads/prescriptions/index.php
 
-# سجلات الأخطاء
-logs/
-*.log
-
-# ملفات النظام
+# OS files
 .DS_Store
 Thumbs.db
+
+# Editor
+.vscode/
+*.swp

@@ -1,4 +1,4 @@
-    </div>
+</div>
 </div>
 
 <!-- jQuery -->
@@ -7,5 +7,9 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
 <!-- AdminLTE JS (CDN) -->
 <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.1.0/dist/js/adminlte.min.js"></script>
+
+<?php require_once 'views/partials/confirm_logout.php'; ?>
+
 </body>
+
 </html>

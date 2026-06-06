@@ -8,7 +8,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg,
+
             height: 100vh;
             display: flex;
             align-items: center;
@@ -25,14 +26,16 @@
         .error-code {
             font-size: 80px;
             font-weight: bold;
-            color: #ffc107;
+            color:
+
         }
         .error-title {
             font-size: 24px;
             margin: 20px 0;
         }
         .btn-home {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg,
+
             border: none;
             color: white;
             padding: 10px 30px;

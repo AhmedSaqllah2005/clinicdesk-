@@ -41,7 +41,8 @@ require_once 'views/partials/sidebar.php';
                             <table class="table table-striped table-hover">
                                 <thead>
                                     <tr>
-                                        <th>#</th>
+                                        <th>
+
                                         <th>Name</th>
                                         <th>Action</th>
                                     </tr>

@@ -9,9 +9,6 @@ class SpecializationController
         $this->specializationModel = new SpecializationModel();
     }
 
-    // =========================================================================
-    // index — عرض القائمة
-    // =========================================================================
 
     public function index()
     {
@@ -22,9 +19,6 @@ class SpecializationController
         require 'views/specializations/index.php';
     }
 
-    // =========================================================================
-    // store — إضافة تخصص جديد (POST)
-    // =========================================================================
 
     public function store()
     {
@@ -53,9 +47,6 @@ class SpecializationController
         redirect('index.php?page=specializations');
     }
 
-    // =========================================================================
-    // delete — حذف تخصص (POST) مع فحص الأمان
-    // =========================================================================
 
     public function delete()
     {
@@ -77,7 +68,7 @@ class SpecializationController
             redirect('index.php?page=specializations');
         }
 
-        // ── فحص: هل يوجد أطباء يستخدمون هذا التخصص؟ ─────────────────────────
+
         if (!$this->specializationModel->isSafeToDelete($id)) {
             $_SESSION['flash'] = [
                 'type'    => 'danger',
