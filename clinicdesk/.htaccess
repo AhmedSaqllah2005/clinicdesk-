@@ -1,0 +1,15 @@
+# ============================================================
+# ClinicDesk — Front Controller Router
+# يوجّه كل الطلبات إلى index.php ما عدا الملفات الموجودة فعلاً
+# ============================================================
+
+Options -Indexes
+
+RewriteEngine On
+
+# السماح بالوصول المباشر للملفات والمجلدات الموجودة (CSS, JS, صور)
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# توجيه كل شيء آخر إلى index.php
+RewriteRule ^(.*)$ index.php [QSA,L]
